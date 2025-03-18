@@ -10,7 +10,10 @@ export default function TabthreeScreen() {
   const [lists, setLists] = useState<EventList[]>([
     { title: 'Parties', events: [] },
     { title: 'Interviews', events: [] },
-    { title: 'Outings', events: [] }
+    { title: 'Outings', events: [] },
+    { title: 'Meetings', events: [] },
+    { title: 'Appointments', events: [] },
+    { title: 'Others', events: [] },
   ]);
 
   // Keep text input for each list (only for event name)
