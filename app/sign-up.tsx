@@ -1,6 +1,19 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert, ActivityIndicator, ScrollView } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
+  Alert,
+  ActivityIndicator,
+  ScrollView,
+} from "react-native";
 import { router } from "expo-router";
+import { supabase } from "@/supabaseClient";
+
+const developmentMode = false;
 
 export default function SignUp() {
   const [fullName, setFullName] = useState("");
@@ -15,39 +28,43 @@ export default function SignUp() {
     return emailRegex.test(email);
   };
 
-  const handleSignUp = () => {
-    //form validation
-    if (fullName.trim() === "" || email.trim() === "" || username.trim() === "" || password.trim() === "") {
-      Alert.alert("Error", "All fields are required.");
-      return;
-    }
-    if (!validateEmail(email)) {
-      Alert.alert("Error", "Please enter a valid email address.");
-      return;
-    }
-    if (password !== confirmPassword) {
-      Alert.alert("Error", "Passwords do not match.");
-      return;
-    }
-    if (password.length < 8) {
-      Alert.alert("Error", "Password must be at least 8 characters long.");
-      return;
+  const handleSignUp = async () => {
+    //form validation unless in dev mode
+    if (developmentMode) {
+      if (
+        fullName.trim() === "" ||
+        email.trim() === "" ||
+        username.trim() === "" ||
+        password.trim() === ""
+      ) {
+        Alert.alert("Error", "All fields are required.");
+        return;
+      }
+      if (!validateEmail(email)) {
+        Alert.alert("Error", "Please enter a valid email address.");
+        return;
+      }
+      if (password !== confirmPassword) {
+        Alert.alert("Error", "Passwords do not match.");
+        return;
+      }
+      if (password.length < 8) {
+        Alert.alert("Error", "Password must be at least 8 characters long.");
+        return;
+      }
     }
     setIsLoading(true);
 
-    //simulates server request for signup
-    setTimeout(() => {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+    });
+    if (error) {
+      Alert.alert("Error", error.message || "An unexpected error occurred");
       setIsLoading(false);
-      
-      //redirects to the login page after successful signup
-      Alert.alert(
-        "Success", 
-        "Account created successfully!", 
-        [
-          { text: "Log In", onPress: () => router.replace("/sign-in") }
-        ]
-      );
-    }, 1500);
+    } else {
+      router.push("/sign-in");
+    }
   };
 
   return (
@@ -55,7 +72,9 @@ export default function SignUp() {
       <View style={styles.container}>
         <Text style={styles.title}>CREATE ACCOUNT</Text>
         <Image
-          source={{ uri: "https://cdn-icons-png.flaticon.com/512/1077/1077114.png" }}
+          source={{
+            uri: "https://cdn-icons-png.flaticon.com/512/1077/1077114.png",
+          }}
           style={styles.avatar}
         />
 
@@ -110,15 +129,14 @@ export default function SignUp() {
         />
 
         {/* Sign Up Button */}
-        <TouchableOpacity 
-          style={styles.button} 
+        <TouchableOpacity
+          style={styles.button}
           onPress={handleSignUp}
           disabled={isLoading}
         >
           {isLoading ? (
             <ActivityIndicator size="small" color="#34495e" />
           ) : (
-            
             <Text style={styles.buttonText}>Create Account</Text>
           )}
         </TouchableOpacity>

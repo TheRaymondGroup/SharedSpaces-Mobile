@@ -1,26 +1,29 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, Button, Alert } from 'react-native';
+import React, { useState } from "react";
+import { StyleSheet, Text, View, TextInput, Button, Alert } from "react-native";
+import { router } from "expo-router";
 
 export default function CreateSpaceScreen() {
-  const [spaceName, setSpaceName] = useState('');
-  const [spaceCode, setSpaceCode] = useState('');
+  const [spaceName, setSpaceName] = useState("");
+  const [spaceCode, setSpaceCode] = useState("");
 
   const handleCreateSpace = () => {
-    if (spaceName.trim() === '') {
-      Alert.alert('Error', 'Please enter a space name.');
+    if (spaceName.trim() === "") {
+      Alert.alert("Error", "Please enter a space name.");
       return;
     }
-    Alert.alert('Success', `Space "${spaceName}" created!`);
-    setSpaceName('');
+    Alert.alert("Success", `Space "${spaceName}" created!`);
+    setSpaceName("");
+    router.push("/shared-dashboard");
   };
 
   const handleJoinSpace = () => {
-    if (spaceCode.trim() === '') {
-      Alert.alert('Error', 'Please enter a space code.');
+    if (spaceCode.trim() === "") {
+      Alert.alert("Error", "Please enter a space code.");
       return;
     }
-    Alert.alert('Success', `Joined space with code "${spaceCode}"!`);
-    setSpaceCode('');
+    Alert.alert("Success", `Joined space with code "${spaceCode}"!`);
+    setSpaceCode("");
+    router.push("/shared-dashboard");
   };
 
   return (
@@ -53,14 +56,14 @@ export default function CreateSpaceScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
     padding: 16,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: "#f5f5f5",
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
+    fontWeight: "bold",
+    textAlign: "center",
     marginBottom: 20,
   },
   inputContainer: {
@@ -68,11 +71,11 @@ const styles = StyleSheet.create({
   },
   input: {
     height: 40,
-    borderColor: '#ccc',
+    borderColor: "#ccc",
     borderWidth: 1,
     borderRadius: 4,
     paddingHorizontal: 8,
     marginBottom: 10,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
 });
