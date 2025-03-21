@@ -1,15 +1,14 @@
-// DASHBOARD
-
 import { StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native";
 import { TouchableOpacity } from "react-native";
-import { Text, View } from "@/components/Themed";
+import { Text } from "react-native";
+import { View } from "react-native";
 
 import { useRouter } from "expo-router";
 
-const router = useRouter();
-
 export default function TabOneScreen() {
+  const router = useRouter();
+
   // Array of pastel colors for the buttons
   const pastelColors = [
     "#FFB6C1", // Light Pink
@@ -29,14 +28,14 @@ export default function TabOneScreen() {
             style={[styles.button, { backgroundColor: pastelColors[0] }]}
             onPress={() => router.push("/shared-event-list")}
           >
-            <Text style={styles.buttonText}>1</Text>
+            <Text style={styles.buttonText}>Event</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={[styles.button, { backgroundColor: pastelColors[1] }]}
             onPress={() => router.push("/shared-task-list")}
           >
-            <Text style={styles.buttonText}>2</Text>
+            <Text style={styles.buttonText}>Task</Text>
           </TouchableOpacity>
         </View>
 
@@ -45,14 +44,14 @@ export default function TabOneScreen() {
             style={[styles.button, { backgroundColor: pastelColors[3] }]}
             onPress={() => console.log("Button 4 pressed")}
           >
-            <Text style={styles.buttonText}>4</Text>
+            <Text style={styles.buttonText}>this doesnt do anything</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={[styles.button, { backgroundColor: pastelColors[4] }]}
             onPress={() => console.log("Button 5 pressed")}
           >
-            <Text style={styles.buttonText}>5</Text>
+            <Text style={styles.buttonText}>this also doesnt do anything</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -63,7 +62,7 @@ export default function TabOneScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#ff0000",
+    backgroundColor: "#ffffff",
     padding: 20,
   },
   title: {
@@ -71,19 +70,22 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 20,
     textAlign: "center",
+    color: "#000",
   },
   buttonsContainer: {
     flexDirection: "row",
     justifyContent: "space-around",
     alignItems: "flex-start",
+    backgroundColor: "#ffffff",
   },
   column: {
     alignItems: "center",
+    backgroundColor: "#ffffff",
   },
   button: {
-    width: 100,
+    width: 150, // Increased width for rectangle shape
     height: 100,
-    borderRadius: 20,
+    borderRadius: 0, // Removed rounded borders
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 20,
