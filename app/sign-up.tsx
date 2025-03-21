@@ -11,6 +11,7 @@ import {
   ScrollView,
 } from "react-native";
 import { router } from "expo-router";
+import { supabase } from "@/supabaseClient";
 
 const developmentMode = false;
 
@@ -27,7 +28,7 @@ export default function SignUp() {
     return emailRegex.test(email);
   };
 
-  const handleSignUp = () => {
+  const handleSignUp = async () => {
     //form validation unless in dev mode
     if (developmentMode) {
       if (
@@ -54,7 +55,16 @@ export default function SignUp() {
     }
     setIsLoading(true);
 
-    router.push("/sign-in");
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+    });
+    if (error) {
+      Alert.alert("Error", error.message || "An unexpected error occurred");
+      setIsLoading(false);
+    } else {
+      router.push("/sign-in");
+    }
   };
 
   return (
