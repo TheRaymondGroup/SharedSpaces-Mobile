@@ -54,7 +54,7 @@ export default function SignUp() {
     }
     setIsLoading(true);
 
-    router.push("/shared-dashboard");
+    router.push("/sign-in");
   };
 
   return (
