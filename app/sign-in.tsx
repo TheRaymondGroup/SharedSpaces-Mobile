@@ -53,7 +53,7 @@ export default function SignIn() {
       {/* Username Input */}
       <TextInput
         style={styles.input}
-        placeholder="Username"
+        placeholder="Email"
         placeholderTextColor="#666"
         value={email}
         onChangeText={setEmail}
