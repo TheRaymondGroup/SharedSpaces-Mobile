@@ -1,15 +1,25 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
+  Alert,
+  ActivityIndicator,
+} from "react-native";
 import { router } from "expo-router";
+import { supabase } from "@/supabaseClient";
 
 export default function SignIn() {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     //form validation
-    if (username.trim() === "" || password.trim() === "") {
+    if (email.trim() === "" || password.trim() === "") {
       Alert.alert("Error", "Username and password are required.");
       return;
     }
@@ -17,24 +27,26 @@ export default function SignIn() {
     //loading state after form validation
     setIsLoading(true);
 
-    //simulating server request for login
-    setTimeout(() => {
-      if (username === "admin" && password === "password") {
-        setIsLoading(false);
-        //redirects to the dashboard after successful login
-        router.replace("/shared-dashboard");
-      } else {
-        setIsLoading(false);
-        Alert.alert("Login Failed", "Invalid credentials. Try again.");
-      }
-    }, 1000);
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      Alert.alert("Error", error.message || "An unexpected error occurred");
+    } else {
+      router.replace("/shared-dashboard");
+    }
+    setIsLoading(false);
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>SIGN IN</Text>
       <Image
-        source={{ uri: "https://cdn-icons-png.flaticon.com/512/1077/1077114.png" }}
+        source={{
+          uri: "https://cdn-icons-png.flaticon.com/512/1077/1077114.png",
+        }}
         style={styles.avatar}
       />
 
@@ -43,8 +55,8 @@ export default function SignIn() {
         style={styles.input}
         placeholder="Username"
         placeholderTextColor="#666"
-        value={username}
-        onChangeText={setUsername}
+        value={email}
+        onChangeText={setEmail}
         autoCapitalize="none"
       />
 
@@ -59,8 +71,8 @@ export default function SignIn() {
       />
 
       {/* Login Button */}
-      <TouchableOpacity 
-        style={styles.button} 
+      <TouchableOpacity
+        style={styles.button}
         onPress={handleLogin}
         disabled={isLoading}
       >
