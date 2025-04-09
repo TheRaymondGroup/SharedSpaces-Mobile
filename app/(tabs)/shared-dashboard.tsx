@@ -1,59 +1,56 @@
-import { StyleSheet } from "react-native";
-import { SafeAreaView } from "react-native";
-import { TouchableOpacity } from "react-native";
-import { Text } from "react-native";
-import { View } from "react-native";
-
+import { StyleSheet, SafeAreaView, TouchableOpacity, Text, View } from "react-native";
 import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons"; // Using Ionicons for button icons
 
 export default function TabOneScreen() {
   const router = useRouter();
 
-  // Array of pastel colors for the buttons
-  const pastelColors = [
-    "#FFB6C1", // Light Pink
-    "#AFEEEE", // Pale Turquoise
-    "#FFDAB9", // Peach Puff
-    "#D8BFD8", // Thistle (Light Purple)
-    "#98FB98", // Pale Green
+  const buttons = [
+    {
+      label: "Shared Event List",
+      icon: "calendar-outline",
+      color: "#F0E5DE",
+      onPress: () => router.push("/shared-event-list"),
+    },
+    {
+      label: "Shared Task List",
+      icon: "checkmark-done-outline",
+      color: "#DDEFEF",
+      onPress: () => router.push("/shared-task-list"),
+    },
+    {
+      label: "Calendar View for Shared Lists",
+      icon: "calendar",
+      color: "#EAE6F2",
+      onPress: () => router.push("/calendar-view"),
+    },
+    {
+      label: "Money Reimbursement",
+      icon: "cash-outline",
+      color: "#E8F5E9",
+      onPress: () => router.push("/money-reinbursement"),
+    },
   ];
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Dashboard</Text>
+      {/* Header */}
+      <View style={[styles.header, { backgroundColor: "transparent", alignItems: "center", justifyContent: "center" }]}>
+        <Text style={styles.spaceName}>SHARED DASHBOARD</Text>
+      </View>
 
+      {/* Buttons */}
       <View style={styles.buttonsContainer}>
-        <View style={styles.column}>
+        {buttons.map((btn, idx) => (
           <TouchableOpacity
-            style={[styles.button, { backgroundColor: pastelColors[0] }]}
-            onPress={() => router.push("/shared-event-list")}
+            key={idx}
+            style={[styles.button, { backgroundColor: btn.color }]}
+            onPress={btn.onPress}
           >
-            <Text style={styles.buttonText}>Event</Text>
+            <Ionicons name={btn.icon as keyof typeof Ionicons.glyphMap} size={24} color="#333" style={styles.icon} />
+            <Text style={styles.buttonText}>{btn.label}</Text>
           </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.button, { backgroundColor: pastelColors[1] }]}
-            onPress={() => router.push("/shared-task-list")}
-          >
-            <Text style={styles.buttonText}>Task</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.column}>
-          <TouchableOpacity
-            style={[styles.button, { backgroundColor: pastelColors[3] }]}
-            onPress={() => console.log("Button 4 pressed")}
-          >
-            <Text style={styles.buttonText}>this doesnt do anything</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.button, { backgroundColor: pastelColors[4] }]}
-            onPress={() => console.log("Button 5 pressed")}
-          >
-            <Text style={styles.buttonText}>this also doesnt do anything</Text>
-          </TouchableOpacity>
-        </View>
+        ))}
       </View>
     </SafeAreaView>
   );
@@ -63,43 +60,46 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#ffffff",
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingTop: 56,
   },
-  title: {
+  header: {
+    marginTop: 32,
+    marginBottom: 24,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  spaceName: {
     fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 20,
-    textAlign: "center",
-    color: "#000",
+    fontWeight: "600",
+    color: "#333",
+    textTransform: "uppercase",
   },
   buttonsContainer: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "flex-start",
-    backgroundColor: "#ffffff",
-  },
-  column: {
-    alignItems: "center",
-    backgroundColor: "#ffffff",
+    flexDirection: "column",
+    gap: 16,
   },
   button: {
-    width: 150, // Increased width for rectangle shape
+    width: "100%",
     height: 100,
-    borderRadius: 0, // Removed rounded borders
-    justifyContent: "center",
+    borderRadius: 0,
+    flexDirection: "row",
     alignItems: "center",
-    marginBottom: 20,
-    // Add shadow for iOS
+    justifyContent: "center",
+    paddingHorizontal: 16,
+    elevation: 2,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    // Add elevation for Android
-    elevation: 3,
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+  },
+  icon: {
+    marginRight: 12,
   },
   buttonText: {
-    fontSize: 24,
-    fontWeight: "bold",
+    fontSize: 18,
+    fontWeight: "300",
     color: "#555",
   },
 });
