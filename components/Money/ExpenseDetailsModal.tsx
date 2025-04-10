@@ -1,5 +1,3 @@
-// sharedspaces-mobile/app/components/Money/ExpenseDetailsModal.tsx
-
 import React from 'react';
 import { View, Text, TextInput, Modal, Pressable } from 'react-native';
 import { styles, Expense, formatDateInput } from './utils';
@@ -27,6 +25,11 @@ export const ExpenseDetailsModal: React.FC<ExpenseDetailsModalProps> = ({
       updated.amount = parseFloat(value) || 0;
     } else if (field === 'date') {
       updated.date = formatDateInput(value);
+    } else if (field === 'splitBetween') {
+      // Split the comma-separated input into an array of trimmed names.
+      updated.splitBetween = value.split(',')
+        .map(name => name.trim())
+        .filter(Boolean);
     } else {
       updated[field] = value;
     }
@@ -60,7 +63,7 @@ export const ExpenseDetailsModal: React.FC<ExpenseDetailsModalProps> = ({
             onChangeText={(t) => handleChange('paidBy', t)}
           />
 
-          <Text style={styles.inputLabel}>Date:</Text>
+          <Text style={styles.inputLabel}>Date (MM/DD/YYYY):</Text>
           <TextInput
             style={styles.modalInput}
             placeholder="MM/DD/YYYY"
@@ -68,6 +71,17 @@ export const ExpenseDetailsModal: React.FC<ExpenseDetailsModalProps> = ({
             onChangeText={(t) => handleChange('date', t)}
             keyboardType="numeric"
             maxLength={10}
+          />
+
+          <Text style={styles.inputLabel}>Split Between (comma-separated):</Text>
+          <TextInput
+            style={styles.modalInput}
+            placeholder="e.g., Alice, Bob, Charlie"
+            value={expense.splitBetween ? expense.splitBetween.join(", ") : ""}
+            onChangeText={(t) => handleChange('splitBetween', t)}
+            keyboardType="default"  // <-- forces a normal text keyboard
+            autoCapitalize="none"   // optional: prevents automatic capitalization
+            autoCorrect={false}     // optional: prevents automatic corrections
           />
 
           <View style={styles.modalButtonsRow}>
