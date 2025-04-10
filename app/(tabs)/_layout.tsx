@@ -334,12 +334,13 @@ export default function DrawerLayout() {
         }}
       />
 
-      {/* Money Tab */}
       <Drawer.Screen
-        name="money"               // corresponds to app/(tabs)/money.tsx
+        name="Money"
         options={{
           drawerLabel: "Money",
-          drawerIcon: ({ color }) => <DrawerIcon name="dollar" color={color} />,
+          drawerIcon: ({ color }) => (
+            <DrawerIcon name="dollar" color={color} />
+          ),
         }}
       />
     </Drawer>
