@@ -335,11 +335,11 @@ export default function DrawerLayout() {
       />
 
       <Drawer.Screen
-        name="Money"
+        name="money"
         options={{
           drawerLabel: "Money",
           drawerIcon: ({ color }) => (
-            <DrawerIcon name="dollar" color={color} />
+            <DrawerIcon name="money" color={color} />
           ),
         }}
       />
