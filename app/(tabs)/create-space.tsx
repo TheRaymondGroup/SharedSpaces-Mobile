@@ -1,27 +1,44 @@
 import React, { useState } from "react";
 import { StyleSheet, Text, View, TextInput, Button, Alert } from "react-native";
 import { router } from "expo-router";
+import { supabase } from "@/supabaseClient";
+import { useSpace } from "@/spaceContext";
 
 export default function CreateSpaceScreen() {
   const [spaceName, setSpaceName] = useState("");
   const [spaceCode, setSpaceCode] = useState("");
+  const { refreshSpace } = useSpace();
 
-  const handleCreateSpace = () => {
+  const handleCreateSpace = async () => {
     if (spaceName.trim() === "") {
       Alert.alert("Error", "Please enter a space name.");
       return;
     }
-    Alert.alert("Success", `Space "${spaceName}" created!`);
+
+    const { data, error } = await supabase.rpc("create_space", {
+      space_name: spaceName,
+    });
+    if (error) throw error;
+
+    refreshSpace();
     setSpaceName("");
     router.push("/shared-dashboard");
   };
 
-  const handleJoinSpace = () => {
+  const handleJoinSpace = async () => {
     if (spaceCode.trim() === "") {
       Alert.alert("Error", "Please enter a space code.");
       return;
     }
-    Alert.alert("Success", `Joined space with code "${spaceCode}"!`);
+    const { data, error } = await supabase.rpc("join_space_by_code", {
+      join_code: spaceCode,
+    });
+
+    Alert.alert("data" + data + (error ? "error" + error.message : ""));
+
+    if (error) throw error;
+
+    refreshSpace();
     setSpaceCode("");
     router.push("/shared-dashboard");
   };
