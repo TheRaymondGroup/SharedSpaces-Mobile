@@ -35,7 +35,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
         <Text style={styles.modalHeader}>DETAILS</Text>
         <View style={styles.modalContent}>
           {/* Task Name */}
-          <Text style={styles.inputLabel}>Name of Task:</Text>
+          <Text style={styles.inputLabel}>Name of Task: <Text style={styles.requiredField}>*</Text></Text>
           <TextInput
             style={styles.modalInput}
             value={task.name}
@@ -51,23 +51,15 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
           />
 
           {/* Assigned To */}
-          <Text style={styles.inputLabel}>Assigned To:</Text>
+          <Text style={styles.inputLabel}>Assigned To: <Text style={styles.requiredField}>*</Text></Text>
           <TextInput
             style={styles.modalInput}
             value={task.assignedTo}
             onChangeText={(text) => handleChange('assignedTo', text)}
           />
 
-          {/* Assigned By */}
-          <Text style={styles.inputLabel}>Assigned By:</Text>
-          <TextInput
-            style={styles.modalInput}
-            value={task.assignedBy}
-            onChangeText={(text) => handleChange('assignedBy', text)}
-          />
-
           {/* Date Deadline */}
-          <Text style={styles.inputLabel}>Date Deadline:</Text>
+          <Text style={styles.inputLabel}>Date Deadline: <Text style={styles.requiredField}>*</Text></Text>
           <TextInput
             style={styles.modalInput}
             placeholder="MM/DD/YYYY"
@@ -79,6 +71,9 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
             keyboardType="numeric"
             maxLength={10}
           />
+
+          {/* Required fields note */}
+          <Text style={styles.requiredFieldNote}><Text style={styles.requiredField}>*</Text> Required fields</Text>
 
           {/* Modal error message */}
           {errorMessage !== '' && (

@@ -1,18 +1,38 @@
 import { StyleSheet } from 'react-native';
 
+// Update your Task interface to explicitly mark optional fields
 export interface Task {
   id: string;
-  name: string;
+  name: string;         // required
+  assignedTo: string;   // required
+  dateDeadline: string; // required
+  additionalNotes?: string; // optional with ? marker
+  assignedBy?: string;  // optional with ? marker
   completed: boolean;
-  additionalNotes: string;
-  assignedTo: string;
-  assignedBy: string;
-  dateDeadline: string;
 }
 
 export interface TaskList {
   title: string;
   tasks: Task[];
+}
+
+// Add a TaskValidator class to handle validation logic
+export class TaskValidator {
+  static validate(task: Task): string {
+    if (!task.name.trim()) {
+      return "Task name is required";
+    }
+    
+    if (!task.assignedTo.trim()) {
+      return "Assigned To is required";
+    }
+    
+    if (!task.dateDeadline.trim()) {
+      return "Date Deadline is required";
+    }
+    
+    return ""; // No errors
+  }
 }
 
 export const formatDateInput = (input: string): string => {
@@ -175,5 +195,15 @@ export const styles = StyleSheet.create({
   closeButtonText: {
     color: '#fff',
     fontSize: 14,
+  },
+  requiredField: {
+    color: 'red',
+    fontWeight: 'bold',
+  },
+  requiredFieldNote: {
+    fontSize: 12,
+    marginTop: 10,
+    marginBottom: 5,
+    fontStyle: 'italic',
   },
 });
