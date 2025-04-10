@@ -4,7 +4,7 @@ import { StyleSheet, FlatList, View } from 'react-native';
 import { Text } from '@/components/Themed';
 import { EventListCard } from '../../components/Events/EventListCard';
 import { EventDetailsModal } from '../../components/Events/EventDetailsModal';
-import { Event, EventList, validateEventDateTime } from '../../components/Events/utils';
+import { Event, EventList, EventValidator, validateEventDateTime } from '../../components/Events/utils';
 
 export default function TabthreeScreen() {
   const [lists, setLists] = useState<EventList[]>([
@@ -115,7 +115,14 @@ export default function TabthreeScreen() {
   const handleSaveDetails = () => {
     if (!selectedEvent) return;
 
-    // Validate all required fields
+    // Use the EventValidator to validate required fields
+    const validationError = EventValidator.validate(selectedEvent);
+    if (validationError) {
+      setModalErrorMessage(validationError);
+      return;
+    }
+
+    // Validate date and time formats
     const errorMsg = validateEventDateTime(selectedEvent);
     if (errorMsg) {
       setModalErrorMessage(errorMsg);

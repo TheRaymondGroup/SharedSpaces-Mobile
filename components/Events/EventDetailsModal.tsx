@@ -34,7 +34,7 @@ export function EventDetailsModal({
         <Text style={styles.modalHeader}>DETAILS</Text>
         <View style={styles.modalContent}>
           {/* Name */}
-          <Text style={styles.inputLabel}>Name of Event:</Text>
+          <Text style={styles.inputLabel}>Name of Event: <Text style={styles.requiredField}>*</Text></Text>
           <TextInput
             style={styles.modalInput}
             value={event.name}
@@ -44,7 +44,7 @@ export function EventDetailsModal({
           />
 
           {/* Location */}
-          <Text style={styles.inputLabel}>Location:</Text>
+          <Text style={styles.inputLabel}>Location: <Text style={styles.requiredField}>*</Text></Text>
           <TextInput
             style={styles.modalInput}
             value={event.Location}
@@ -64,7 +64,7 @@ export function EventDetailsModal({
           />
 
           {/* Time Deadline */}
-          <Text style={styles.inputLabel}>Time of Event:</Text>
+          <Text style={styles.inputLabel}>Time of Event: <Text style={styles.requiredField}>*</Text></Text>
           <TextInput
             style={styles.modalInput}
             placeholder="HH:MM-XX:XX"
@@ -78,7 +78,7 @@ export function EventDetailsModal({
           />
 
           {/* Date Deadline */}
-          <Text style={styles.inputLabel}>Day of Event:</Text>
+          <Text style={styles.inputLabel}>Day of Event: <Text style={styles.requiredField}>*</Text></Text>
           <TextInput
             style={styles.modalInput}
             placeholder="MM/DD/YYYY"
@@ -90,6 +90,9 @@ export function EventDetailsModal({
             keyboardType="numeric"
             maxLength={10}
           />
+
+          {/* Required fields note */}
+          <Text style={styles.requiredFieldNote}><Text style={styles.requiredField}>*</Text> Required fields</Text>
 
           {/* Display modal error message if any */}
           {errorMessage !== '' && (
@@ -172,5 +175,15 @@ const styles = StyleSheet.create({
   closeButtonText: {
     color: '#fff',
     fontSize: 14,
+  },
+  requiredField: {
+    color: 'red',
+    fontWeight: 'bold',
+  },
+  requiredFieldNote: {
+    fontSize: 12,
+    marginTop: 10,
+    marginBottom: 5,
+    fontStyle: 'italic',
   },
 });
