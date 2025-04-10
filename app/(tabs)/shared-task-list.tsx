@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { FlatList } from 'react-native';
 import { Text, View } from '@/components/Themed';
-import { styles, Task, TaskList } from '../../components/Tasks/utils';
+import { styles, Task, TaskList, TaskValidator } from '../../components/Tasks/utils';
 import { TaskListCard } from '../../components/Tasks/TaskListCard';
 import { TaskDetailsModal } from '../../components/Tasks/TaskDetailsModal';
 
@@ -107,15 +107,10 @@ export default function TabTwoScreen() {
   const handleSaveDetails = () => {
     if (!selectedTask) return;
 
-    // Validate that all required fields are filled.
-    if (
-      !selectedTask.name.trim() ||
-      !selectedTask.additionalNotes.trim() ||
-      !selectedTask.assignedTo.trim() ||
-      !selectedTask.assignedBy.trim() ||
-      !selectedTask.dateDeadline.trim()
-    ) {
-      setModalErrorMessage('Please fill in all required details.');
+    // Use the TaskValidator to validate required fields
+    const validationError = TaskValidator.validate(selectedTask);
+    if (validationError) {
+      setModalErrorMessage(validationError);
       return;
     }
 
@@ -125,6 +120,7 @@ export default function TabTwoScreen() {
       setModalErrorMessage('Please enter a valid date in MM/DD/YYYY format.');
       return;
     }
+    
     const month = Number(dateParts[0]);
     const day = Number(dateParts[1]);
     const year = Number(dateParts[2]);
@@ -132,11 +128,13 @@ export default function TabTwoScreen() {
       setModalErrorMessage('Invalid date.');
       return;
     }
+    
     const inputDate = new Date(year, month - 1, day);
     if (day < 1 || day > 31 || month < 1 || month > 12) {
       setModalErrorMessage('Invalid date.');
       return;
     }
+    
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     if (inputDate < today) {

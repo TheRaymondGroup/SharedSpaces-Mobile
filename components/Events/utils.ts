@@ -1,12 +1,12 @@
 // utils.ts
 export interface Event {
-  id: string;          // For unique key
-  name: string;        // Main text/title of the event
+  id: string;
+  name: string;         // required
+  Location: string;     // required 
+  Host?: string;        // optional with ? marker
+  dateDeadline: string; // required
+  timeDeadline: string; // required
   completed: boolean;
-  Location: string;
-  timeDeadline: string;
-  Host: string;
-  dateDeadline: string; // Could store as string or Date object
 }
 
 export interface EventList {
@@ -37,13 +37,35 @@ export const formatTimeInput = (input: string) => {
   return `${h0}${m0}${h1}${m1}`.substring(0, 11);
 };
 
+// Add an EventValidator class to handle validation logic
+export class EventValidator {
+  static validate(event: Event): string {
+    if (!event.name.trim()) {
+      return "Event name is required";
+    }
+    
+    if (!event.Location.trim()) {
+      return "Location is required";
+    }
+    
+    if (!event.dateDeadline.trim()) {
+      return "Day of Event is required";
+    }
+    
+    if (!event.timeDeadline.trim()) {
+      return "Time of Event is required";
+    }
+    
+    return ""; // No errors
+  }
+}
+
 // Validate event date and time
 export const validateEventDateTime = (event: Event): string | null => {
   // Check required fields
   if (
     !event.name.trim() ||
     !event.Location.trim() ||
-    !event.Host.trim() ||
     !event.timeDeadline.trim() ||
     !event.dateDeadline.trim()
   ) {
