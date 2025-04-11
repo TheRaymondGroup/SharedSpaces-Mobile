@@ -6,37 +6,35 @@ import {
   TouchableOpacity,
   StyleSheet,
   Image,
-  Alert,
   ActivityIndicator,
 } from "react-native";
 import { router } from "expo-router";
 import { supabase } from "@/supabaseClient";
+import Icon from 'react-native-vector-icons/Ionicons';
 
 export default function SignIn() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [loginError, setLoginError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async () => {
-    //form validation
     if (email.trim() === "" || password.trim() === "") {
-      Alert.alert("Error", "Username and password are required.");
+      setLoginError("Email and password are required.");
       return;
     }
 
-    //loading state after form validation
     setIsLoading(true);
-
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
-      Alert.alert("Error", error.message || "An unexpected error occurred");
+      setLoginError("Wrong email or password.");
     } else {
+      setLoginError("");
       router.replace("/shared-dashboard");
     }
+
     setIsLoading(false);
   };
 
@@ -50,25 +48,48 @@ export default function SignIn() {
         style={styles.avatar}
       />
 
-      {/* Username Input */}
+      {/* Email Input */}
       <TextInput
         style={styles.input}
         placeholder="Email"
         placeholderTextColor="#666"
         value={email}
-        onChangeText={setEmail}
+        onChangeText={(text) => {
+          setEmail(text);
+          if (loginError) setLoginError("");
+        }}
         autoCapitalize="none"
       />
 
-      {/* Password Input */}
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        placeholderTextColor="#666"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
+      {/* Password Input with properly aligned eye icon */}
+      <View style={styles.passwordContainer}>
+        <TextInput
+          style={styles.passwordInput}
+          placeholder="Password"
+          placeholderTextColor="#666"
+          secureTextEntry={!showPassword}
+          value={password}
+          onChangeText={(text) => {
+            setPassword(text);
+            if (loginError) setLoginError("");
+          }}
+        />
+        <TouchableOpacity
+          onPress={() => setShowPassword((prev) => !prev)}
+          style={styles.eyeIconButton}
+        >
+          <Icon
+            name={showPassword ? "eye-off-outline" : "eye-outline"}
+            size={22}
+            color="#666"
+          />
+        </TouchableOpacity>
+      </View>
+
+      {/* Error Message */}
+      {loginError !== "" && (
+        <Text style={{ color: "red", marginBottom: 10 }}>{loginError}</Text>
+      )}
 
       {/* Login Button */}
       <TouchableOpacity
@@ -83,7 +104,7 @@ export default function SignIn() {
         )}
       </TouchableOpacity>
 
-      {/* Create Account */}
+      {/* Sign Up Prompt */}
       <Text style={styles.signupText}>Don't have an account?</Text>
       <TouchableOpacity
         style={styles.createButton}
@@ -125,6 +146,28 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     marginVertical: 10,
     backgroundColor: "#fff",
+  },
+  passwordContainer: {
+    width: "80%",
+    flexDirection: "row",
+    alignItems: "center",
+    borderColor: "#ccc",
+    borderWidth: 1,
+    borderRadius: 5,
+    backgroundColor: "#fff",
+    height: 40,
+    marginVertical: 10,
+  },
+  passwordInput: {
+    flex: 1,
+    height: 40,
+    paddingHorizontal: 8,
+    backgroundColor: "transparent",
+  },
+  eyeIconButton: {
+    padding: 8,
+    justifyContent: "center",
+    alignItems: "center",
   },
   button: {
     backgroundColor: "#fff",

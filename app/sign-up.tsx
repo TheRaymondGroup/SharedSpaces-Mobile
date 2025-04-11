@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { router } from "expo-router";
 import { supabase } from "@/supabaseClient";
+import Icon from 'react-native-vector-icons/Ionicons';
 
 const developmentMode = false;
 
@@ -22,6 +23,8 @@ export default function SignUp() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -108,25 +111,49 @@ export default function SignUp() {
           onChangeText={setUsername}
         />
 
-        {/* Password Input */}
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          placeholderTextColor="#666"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
+        {/* Password Input with Eye Icon */}
+        <View style={styles.passwordContainer}>
+          <TextInput
+            style={styles.passwordInput}
+            placeholder="Password"
+            placeholderTextColor="#666"
+            secureTextEntry={!showPassword}
+            value={password}
+            onChangeText={setPassword}
+          />
+          <TouchableOpacity
+            onPress={() => setShowPassword((prev) => !prev)}
+            style={styles.eyeIconButton}
+          >
+            <Icon
+              name={showPassword ? "eye-off-outline" : "eye-outline"}
+              size={22}
+              color="#666"
+            />
+          </TouchableOpacity>
+        </View>
 
-        {/* Confirm Password Input */}
-        <TextInput
-          style={styles.input}
-          placeholder="Confirm Password"
-          placeholderTextColor="#666"
-          secureTextEntry
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-        />
+        {/* Confirm Password Input with Eye Icon */}
+        <View style={styles.passwordContainer}>
+          <TextInput
+            style={styles.passwordInput}
+            placeholder="Confirm Password"
+            placeholderTextColor="#666"
+            secureTextEntry={!showConfirmPassword}
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+          />
+          <TouchableOpacity
+            onPress={() => setShowConfirmPassword((prev) => !prev)}
+            style={styles.eyeIconButton}
+          >
+            <Icon
+              name={showConfirmPassword ? "eye-off-outline" : "eye-outline"}
+              size={22}
+              color="#666"
+            />
+          </TouchableOpacity>
+        </View>
 
         {/* Sign Up Button */}
         <TouchableOpacity
@@ -189,6 +216,28 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     marginVertical: 10,
     backgroundColor: "#fff",
+  },
+  passwordContainer: {
+    width: "80%",
+    flexDirection: "row",
+    alignItems: "center",
+    borderColor: "#ccc",
+    borderWidth: 1,
+    borderRadius: 5,
+    backgroundColor: "#fff",
+    height: 40,
+    marginVertical: 10,
+  },
+  passwordInput: {
+    flex: 1,
+    height: 40,
+    paddingHorizontal: 8,
+    backgroundColor: "transparent",
+  },
+  eyeIconButton: {
+    padding: 8,
+    justifyContent: "center",
+    alignItems: "center",
   },
   button: {
     backgroundColor: "#fff",

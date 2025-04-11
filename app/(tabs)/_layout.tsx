@@ -329,7 +329,7 @@ export default function DrawerLayout() {
         options={{
           drawerLabel: "Events",
           drawerIcon: ({ color }) => (
-            <DrawerIcon name="calendar" color={color} />
+            <DrawerIcon name="beer" color={color} />
           ),
         }}
       />
@@ -343,6 +343,25 @@ export default function DrawerLayout() {
           ),
         }}
       />
+      <Drawer.Screen
+        name="calendar-view"
+        options={{
+          drawerLabel: "Calendar",
+          drawerIcon: ({ color }) => (
+            <DrawerIcon name="calendar" color={color} />
+          ),
+        }}
+      />
+      <Drawer.Screen
+        name="create-space"
+        options={{
+          drawerLabel: "Create Space",
+          drawerIcon: ({ color }) => (
+            <DrawerIcon name="plus" color={color} />
+          ),
+        }}
+      />
+
     </Drawer>
   );
 }

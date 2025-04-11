@@ -114,46 +114,48 @@ export default function TabthreeScreen() {
   // Save updates from the details modal (both for new and edited events)
   const handleSaveDetails = () => {
     if (!selectedEvent) return;
-
-    // Validate all required fields
+  
     const errorMsg = validateEventDateTime(selectedEvent);
     if (errorMsg) {
       setModalErrorMessage(errorMsg);
       return;
     }
-
+  
     if (isNewEvent) {
-      // Add the new event to the correct list
-      setLists(prevLists =>
-        prevLists.map(list => {
+      setLists(prevLists => {
+        const updatedLists = prevLists.map(list => {
           if (list.title === selectedListTitle) {
             return { ...list, events: [...list.events, selectedEvent] };
           }
           return list;
-        })
-      );
-      // Clear the newEvents input for that list
+        });
+        setTimeout(() => {
+          console.log('Updated event lists (new):', updatedLists);
+        }, 0);
+        return updatedLists;
+      });
+  
       setNewEvents(prev => ({ ...prev, [selectedListTitle]: '' }));
     } else {
-      // Update an existing event
-      setLists(prevLists =>
-        prevLists.map(list => {
+      setLists(prevLists => {
+        const updatedLists = prevLists.map(list => {
           if (list.title === selectedListTitle) {
-            const updatedEvents = list.events.map(event => {
-              if (event.id === selectedEvent.id) {
-                return { ...selectedEvent };
-              }
-              return event;
-            });
+            const updatedEvents = list.events.map(event =>
+              event.id === selectedEvent.id ? { ...selectedEvent } : event
+            );
             return { ...list, events: updatedEvents };
           }
           return list;
-        })
-      );
+        });
+        setTimeout(() => {
+          console.log('Updated event lists (edited):', updatedLists);
+        }, 0);
+        return updatedLists;
+      });
     }
-
+  
     handleCloseDetails();
-  };
+  };  
 
   return (
     <View style={styles.container}>

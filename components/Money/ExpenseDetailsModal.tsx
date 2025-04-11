@@ -8,6 +8,7 @@ interface ExpenseDetailsModalProps {
   onClose: () => void;
   onSave: () => void;
   onChange: (updated: Expense) => void;
+  errorMessage?: string;
 }
 
 export const ExpenseDetailsModal: React.FC<ExpenseDetailsModalProps> = ({
@@ -16,13 +17,17 @@ export const ExpenseDetailsModal: React.FC<ExpenseDetailsModalProps> = ({
   onClose,
   onSave,
   onChange,
+  errorMessage,
 }) => {
   if (!expense) return null;
 
-  // Local state for the current input text for splitting names
   const [splitInput, setSplitInput] = React.useState("");
+  const [amountText, setAmountText] = React.useState(expense.amount.toString());
 
-  // Generic handler for other expense fields
+  React.useEffect(() => {
+    setAmountText(expense.amount.toString());
+  }, [expense]);
+
   const handleChange = (field: keyof Expense, value: string) => {
     const updated = { ...expense } as any;
     if (field === "amount") {
@@ -35,14 +40,9 @@ export const ExpenseDetailsModal: React.FC<ExpenseDetailsModalProps> = ({
     onChange(updated);
   };
 
-  // Handler for the "Split Between" input.
-  // As soon as a comma is detected, all complete names (every part except the last) 
-  // are added to the list and rendered as bubbles.
   const handleSplitInputChange = (text: string) => {
     if (text.includes(",")) {
-      // Split text by comma.
       const parts = text.split(",");
-      // Consider all parts except the last as complete names.
       const completeNames = parts
         .slice(0, -1)
         .map((n) => n.trim())
@@ -54,7 +54,6 @@ export const ExpenseDetailsModal: React.FC<ExpenseDetailsModalProps> = ({
         onChange({ ...expense, splitBetween: updatedSplits });
       }
 
-      // Set the input to whatever remains after the last comma.
       setSplitInput(parts[parts.length - 1].trim());
     } else {
       setSplitInput(text);
@@ -72,15 +71,24 @@ export const ExpenseDetailsModal: React.FC<ExpenseDetailsModalProps> = ({
             value={expense.description}
             onChangeText={(t) => handleChange("description", t)}
           />
-
-          <Text style={styles.inputLabel}>Amount:</Text>
-          <TextInput
-            style={styles.modalInput}
-            keyboardType="numeric"
-            value={expense.amount.toString()}
-            onChangeText={(t) => handleChange("amount", t)}
-          />
-
+        <Text style={styles.inputLabel}>Amount:</Text>
+        <TextInput
+          style={styles.modalInput}
+          keyboardType="decimal-pad"
+          value={amountText}
+          onChangeText={(text) => {
+            if (/^\d*\.?\d{0,2}$/.test(text)) {
+              setAmountText(text); 
+            }
+          }}
+          onBlur={() => {
+            const parsed = parseFloat(amountText);
+            if (!isNaN(parsed)) {
+              const updated = { ...expense, amount: parsed };
+              onChange(updated);
+            }
+          }}
+        />
           <Text style={styles.inputLabel}>Paid By:</Text>
           <TextInput
             style={styles.modalInput}
@@ -101,7 +109,6 @@ export const ExpenseDetailsModal: React.FC<ExpenseDetailsModalProps> = ({
           <Text style={styles.inputLabel}>
             Split Between (type a name and comma to add):
           </Text>
-          {/* Display added names as bubbles */}
           {expense.splitBetween && expense.splitBetween.length > 0 && (
             <View style={{ flexDirection: "row", flexWrap: "wrap", marginBottom: 8 }}>
               {expense.splitBetween.map((name, index) => (
@@ -130,6 +137,10 @@ export const ExpenseDetailsModal: React.FC<ExpenseDetailsModalProps> = ({
             autoCapitalize="words"
             autoCorrect={false}
           />
+
+          {errorMessage ? (
+            <Text style={{ color: "red", marginTop: 8 }}>{errorMessage}</Text>
+          ) : null}
 
           <View style={styles.modalButtonsRow}>
             <Pressable style={styles.saveButton} onPress={onSave}>

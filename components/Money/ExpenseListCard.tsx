@@ -9,6 +9,7 @@ interface ExpenseListCardProps {
   onAddExpense: () => void;
   onSettleExpense: () => void;
   onViewExpense: (expenseId: string) => void;
+  onDeleteExpense: (id: string) => void;
 }
 
 export const ExpenseListCard: React.FC<ExpenseListCardProps> = ({
@@ -16,6 +17,7 @@ export const ExpenseListCard: React.FC<ExpenseListCardProps> = ({
   onAddExpense,
   onSettleExpense,
   onViewExpense,
+
 }) => (
   <View style={styles.listCard}>
     <Text style={styles.listTitle}>{list.title}</Text>
