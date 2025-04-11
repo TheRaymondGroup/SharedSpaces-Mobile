@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   Modal,
   View,
@@ -6,8 +6,10 @@ import {
   TouchableOpacity,
   StyleSheet,
   TextInput,
-} from 'react-native';
-import { FontAwesome } from '@expo/vector-icons';
+} from "react-native";
+import { FontAwesome } from "@expo/vector-icons";
+import { sendSpaceNotification } from "@/notificationService";
+import { useSpace, SpaceProvider } from "@/spaceContext";
 
 type OnDemandModalProps = {
   visible: boolean;
@@ -28,6 +30,7 @@ const OnDemandModal = ({
   customMessage,
   onCustomMessageChange,
 }: OnDemandModalProps) => {
+  const { currentSpace, loading } = useSpace();
   return (
     <Modal
       visible={visible}
@@ -46,12 +49,34 @@ const OnDemandModal = ({
           <Text style={styles.modalTitle}>SEND ON DEMAND NOTIFICATIONS</Text>
 
           {/* Buttons */}
-          <TouchableOpacity style={styles.actionButton} onPress={onNotifyForSilence}>
-            <Text style={styles.actionButtonText}>SEND TO NOTIFY FOR SILENCE</Text>
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() =>
+              sendSpaceNotification(
+                currentSpace?.id || "",
+                "ROOMMATE NOTIFICATION",
+                "SHUT UP"
+              )
+            }
+          >
+            <Text style={styles.actionButtonText}>
+              SEND TO NOTIFY FOR SILENCE
+            </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.actionButton} onPress={onNotifyForVisitors}>
-            <Text style={styles.actionButtonText}>SEND TO NOTIFY FOR VISITING GUESTS</Text>
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() =>
+              sendSpaceNotification(
+                currentSpace?.id || "",
+                "ROOMMATE NOTIFICATION",
+                "There are visitors. Please be aware."
+              )
+            }
+          >
+            <Text style={styles.actionButtonText}>
+              SEND TO NOTIFY FOR VISITING GUESTS
+            </Text>
           </TouchableOpacity>
 
           {/* Text Input for Custom Notification */}
@@ -64,7 +89,13 @@ const OnDemandModal = ({
 
           <TouchableOpacity
             style={styles.actionButton}
-            onPress={() => onCustomNotification(customMessage)}
+            onPress={() =>
+              sendSpaceNotification(
+                currentSpace?.id || "",
+                "ROOMMATE NOTIFICATION",
+                customMessage
+              )
+            }
           >
             <Text style={styles.actionButtonText}>CUSTOM A NOTIFICATION</Text>
           </TouchableOpacity>
@@ -79,50 +110,50 @@ export default OnDemandModal;
 const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)', // Dim background
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(0,0,0,0.5)", // Dim background
+    justifyContent: "center",
+    alignItems: "center",
   },
   modalContent: {
-    width: '80%',
-    backgroundColor: '#fff',
+    width: "80%",
+    backgroundColor: "#fff",
     borderRadius: 12,
     padding: 20,
-    alignItems: 'center',
+    alignItems: "center",
     // You can add a custom shadow for iOS/Android:
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
   },
   closeButton: {
-    alignSelf: 'flex-end',
+    alignSelf: "flex-end",
     padding: 4,
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginVertical: 12,
-    textAlign: 'center',
+    textAlign: "center",
   },
   actionButton: {
-    backgroundColor: '#d3d3d3', // Adjust to desired color
+    backgroundColor: "#d3d3d3", // Adjust to desired color
     paddingVertical: 14,
     paddingHorizontal: 20,
     marginVertical: 8,
     borderRadius: 8,
-    width: '100%',
+    width: "100%",
   },
   actionButtonText: {
-    textAlign: 'center',
+    textAlign: "center",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   input: {
-    width: '100%',
+    width: "100%",
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: "#ccc",
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
