@@ -86,7 +86,7 @@ export default function MoneyTab() {
             description: "",
             amount: 0,
             paidBy: "",
-            date: new Date().toISOString(),
+            date: new Date().toLocaleDateString("en-US"),
           });
           setNextId(prev => prev + 1);
           setModalVisible(true);
@@ -98,10 +98,21 @@ export default function MoneyTab() {
         onViewExpense={(id) => {
           const expense = list.expenses.find(e => e.id === id);
           if (expense) {
-            setCurrentExpense(expense);
+            // Reformat the ISO date if needed
+            let formattedDate = expense.date;
+            if (expense.date.includes("T")) {
+              const parsed = new Date(expense.date);
+              formattedDate = parsed.toLocaleDateString("en-US"); // MM/DD/YYYY
+            }
+        
+            setCurrentExpense({
+              ...expense,
+              date: formattedDate,
+            });
+        
             setModalVisible(true);
           }
-        }}
+        }}        
         onDeleteExpense={handleDeleteExpense}
       />
 

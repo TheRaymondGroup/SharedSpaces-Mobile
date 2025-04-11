@@ -9,6 +9,7 @@ export interface Expense {
   amount: number;
   paidBy: string;
   date: string; // MM/DD/YYYY
+  splitBetween?: string[]; // New field for names of members sharing the expense
 }
 
 export interface PersonBalance {

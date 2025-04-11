@@ -329,20 +329,39 @@ export default function DrawerLayout() {
         options={{
           drawerLabel: "Events",
           drawerIcon: ({ color }) => (
-            <DrawerIcon name="calendar" color={color} />
+            <DrawerIcon name="beer" color={color} />
           ),
         }}
       />
 
       <Drawer.Screen
-        name="Money"
+        name="money"
         options={{
           drawerLabel: "Money",
           drawerIcon: ({ color }) => (
-            <DrawerIcon name="dollar" color={color} />
+            <DrawerIcon name="money" color={color} />
           ),
         }}
       />
+      <Drawer.Screen
+        name="calendar-view"
+        options={{
+          drawerLabel: "Calendar",
+          drawerIcon: ({ color }) => (
+            <DrawerIcon name="calendar" color={color} />
+          ),
+        }}
+      />
+      <Drawer.Screen
+        name="create-space"
+        options={{
+          drawerLabel: "Create Space",
+          drawerIcon: ({ color }) => (
+            <DrawerIcon name="plus" color={color} />
+          ),
+        }}
+      />
+
     </Drawer>
   );
 }
