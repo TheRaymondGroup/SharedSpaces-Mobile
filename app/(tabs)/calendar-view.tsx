@@ -1,19 +1,17 @@
+// GroupCalendarScreen.tsx
 import React, { useState, useMemo } from 'react';
-import { View, Text, FlatList } from 'react-native';
+import { View, Text, FlatList, StyleSheet } from 'react-native';
 import { Calendar } from 'react-native-calendars';
-import { EventList } from '../../components/Events/utils';
+import { useEventsState } from '../../hooks/useEventsState';
 
-interface GroupCalendarScreenProps {
-  lists?: EventList[];
-}
-
-const GroupCalendarScreen: React.FC<GroupCalendarScreenProps> = ({ lists = [] }) => {
+const GroupCalendarScreen: React.FC = () => {
+  const { lists } = useEventsState();
   const today = new Date();
   const currentMonth = today.toISOString().split('T')[0];
   const [selectedDate, setSelectedDate] = useState('');
-
+  
   const allEvents = useMemo(() => lists.flatMap(list => list.events), [lists]);
-
+  
   const markedDates = useMemo(() => {
     const marks: { [date: string]: { marked: boolean; dotColor?: string; selected?: boolean; selectedColor?: string } } = {};
     allEvents.forEach(event => {
@@ -33,7 +31,7 @@ const GroupCalendarScreen: React.FC<GroupCalendarScreenProps> = ({ lists = [] })
     }
     return marks;
   }, [allEvents, selectedDate]);
-
+  
   const eventsOnSelectedDate = useMemo(() => {
     return allEvents.filter(event => {
       if (!event.dateDeadline) return false;
@@ -41,10 +39,10 @@ const GroupCalendarScreen: React.FC<GroupCalendarScreenProps> = ({ lists = [] })
       return normalized === selectedDate;
     });
   }, [allEvents, selectedDate]);
-
+  
   return (
-    <View style={{ flex: 1, padding: 16 }}>
-      <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 12 }}>
+    <View style={styles.container}>
+      <Text style={styles.title}>
         Calendar - {today.toLocaleString('default', { month: 'long', year: 'numeric' })}
       </Text>
       <Calendar
@@ -53,26 +51,75 @@ const GroupCalendarScreen: React.FC<GroupCalendarScreenProps> = ({ lists = [] })
         hideExtraDays={true}
         markedDates={markedDates}
       />
-
+      
       {selectedDate ? (
-        <View style={{ marginTop: 20 }}>
-          <Text style={{ fontSize: 16, fontWeight: '500' }}>Events on {selectedDate}</Text>
+        <View style={styles.eventsContainer}>
+          <Text style={styles.eventsTitle}>Events on {selectedDate}</Text>
           <FlatList
             data={eventsOnSelectedDate}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
-              <View style={{ paddingVertical: 6 }}>
-                <Text style={{ fontWeight: '500' }}>{item.name}</Text>
-                {item.Location ? <Text style={{ color: '#666' }}>📍 {item.Location}</Text> : null}
-                {item.timeDeadline ? <Text style={{ color: '#666' }}>🕒 {item.timeDeadline}</Text> : null}
+              <View style={styles.eventItem}>
+                <Text style={styles.eventName}>{item.name}</Text>
+                {item.Location ? <Text style={styles.eventDetail}>📍 {item.Location}</Text> : null}
+                {item.timeDeadline ? <Text style={styles.eventDetail}>🕒 {item.timeDeadline}</Text> : null}
+                {item.Host ? <Text style={styles.eventDetail}>👤 {item.Host}</Text> : null}
               </View>
             )}
-            ListEmptyComponent={<Text style={{ color: '#777', marginTop: 10 }}>No events on this day.</Text>}
+            ListEmptyComponent={<Text style={styles.noEventsText}>No events on this day.</Text>}
           />
         </View>
       ) : null}
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 16,
+    backgroundColor: '#D9D0CE',
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 12,
+    color: '#333',
+  },
+  eventsContainer: {
+    marginTop: 20,
+  },
+  eventsTitle: {
+    fontSize: 16,
+    fontWeight: '500',
+    marginBottom: 8,
+    color: '#333',
+  },
+  eventItem: {
+    padding: 12,
+    marginVertical: 4,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  eventName: {
+    fontWeight: '500',
+    fontSize: 16,
+    marginBottom: 4,
+  },
+  eventDetail: {
+    color: '#666',
+    marginTop: 2,
+  },
+  noEventsText: {
+    color: '#777',
+    marginTop: 10,
+    fontStyle: 'italic',
+  },
+});
 
 export default GroupCalendarScreen;

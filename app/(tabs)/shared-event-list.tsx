@@ -4,14 +4,11 @@ import { StyleSheet, FlatList, View } from 'react-native';
 import { Text } from '@/components/Themed';
 import { EventListCard } from '../../components/Events/EventListCard';
 import { EventDetailsModal } from '../../components/Events/EventDetailsModal';
-import { Event, EventList, EventValidator, validateEventDateTime } from '../../components/Events/utils';
+import { Event, EventValidator, validateEventDateTime } from '../../components/Events/utils';
+import { useEventsState } from '../../hooks/useEventsState';
 
 export default function TabthreeScreen() {
-  const [lists, setLists] = useState<EventList[]>([
-    { title: 'Parties', events: [] },
-    { title: 'Interviews', events: [] },
-    { title: 'Outings', events: [] }
-  ]);
+  const { lists, addEvent, deleteEvent, toggleEvent, updateEvent } = useEventsState();
 
   // Keep text input for each list (only for event name)
   const [newEvents, setNewEvents] = useState<{ [key: string]: string }>({});
@@ -58,35 +55,12 @@ export default function TabthreeScreen() {
 
   // Delete an event
   const handleDeleteEvent = (listTitle: string, eventId: string) => {
-    setLists(prevLists =>
-      prevLists.map(list => {
-        if (list.title === listTitle) {
-          return {
-            ...list,
-            events: list.events.filter(event => event.id !== eventId)
-          };
-        }
-        return list;
-      })
-    );
+    deleteEvent(listTitle, eventId);
   };
 
   // Toggle completed
   const handleToggleEvent = (listTitle: string, eventId: string) => {
-    setLists(prevLists =>
-      prevLists.map(list => {
-        if (list.title === listTitle) {
-          const updatedEvents = list.events.map(event => {
-            if (event.id === eventId) {
-              return { ...event, completed: !event.completed };
-            }
-            return event;
-          });
-          return { ...list, events: updatedEvents };
-        }
-        return list;
-      })
-    );
+    toggleEvent(listTitle, eventId);
   };
 
   // Open details modal for editing an event
@@ -130,36 +104,10 @@ export default function TabthreeScreen() {
     }
   
     if (isNewEvent) {
-      setLists(prevLists => {
-        const updatedLists = prevLists.map(list => {
-          if (list.title === selectedListTitle) {
-            return { ...list, events: [...list.events, selectedEvent] };
-          }
-          return list;
-        });
-        setTimeout(() => {
-          console.log('Updated event lists (new):', updatedLists);
-        }, 0);
-        return updatedLists;
-      });
-  
+      addEvent(selectedListTitle, selectedEvent);
       setNewEvents(prev => ({ ...prev, [selectedListTitle]: '' }));
     } else {
-      setLists(prevLists => {
-        const updatedLists = prevLists.map(list => {
-          if (list.title === selectedListTitle) {
-            const updatedEvents = list.events.map(event =>
-              event.id === selectedEvent.id ? { ...selectedEvent } : event
-            );
-            return { ...list, events: updatedEvents };
-          }
-          return list;
-        });
-        setTimeout(() => {
-          console.log('Updated event lists (edited):', updatedLists);
-        }, 0);
-        return updatedLists;
-      });
+      updateEvent(selectedListTitle, selectedEvent.id, selectedEvent);
     }
   
     handleCloseDetails();
