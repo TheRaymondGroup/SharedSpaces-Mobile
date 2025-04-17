@@ -137,6 +137,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     marginTop: 12,
     marginBottom: 4,
+    color: '#302c2c',
   },
   modalInput: {
     borderWidth: 1,
@@ -185,5 +186,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 5,
     fontStyle: 'italic',
+    color: '302c2c',
   },
 });

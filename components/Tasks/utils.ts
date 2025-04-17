@@ -170,6 +170,7 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 8,
     height: 36,
     backgroundColor: '#fff',
+    color: '302c2c',
   },
   modalButtonsRow: {
     flexDirection: 'row',

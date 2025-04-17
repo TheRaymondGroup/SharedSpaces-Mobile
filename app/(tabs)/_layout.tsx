@@ -295,7 +295,7 @@ export default function DrawerLayout() {
           color: "white",
         },
         drawerStyle: {
-          backgroundColor: "#f5f5f5",
+          backgroundColor: "#302c2c",
           width: 250,
         },
         drawerLabelStyle: {

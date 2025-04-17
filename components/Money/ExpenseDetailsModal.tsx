@@ -19,14 +19,20 @@ export const ExpenseDetailsModal: React.FC<ExpenseDetailsModalProps> = ({
   onChange,
   errorMessage,
 }) => {
-  if (!expense) return null;
-
   const [splitInput, setSplitInput] = React.useState("");
-  const [amountText, setAmountText] = React.useState(expense.amount.toString());
+  const [amountText, setAmountText] = React.useState(
+    expense ? expense.amount.toString() : "0"
+  );
 
+  // Update amount text when expense changes
   React.useEffect(() => {
-    setAmountText(expense.amount.toString());
+    if (expense) {
+      setAmountText(expense.amount.toString());
+    }
   }, [expense]);
+
+  // Now safe to return early
+  if (!expense) return null;
 
   const handleChange = (field: keyof Expense, value: string) => {
     const updated = { ...expense } as any;
@@ -71,24 +77,24 @@ export const ExpenseDetailsModal: React.FC<ExpenseDetailsModalProps> = ({
             value={expense.description}
             onChangeText={(t) => handleChange("description", t)}
           />
-        <Text style={styles.inputLabel}>Amount:</Text>
-        <TextInput
-          style={styles.modalInput}
-          keyboardType="decimal-pad"
-          value={amountText}
-          onChangeText={(text) => {
-            if (/^\d*\.?\d{0,2}$/.test(text)) {
-              setAmountText(text); 
-            }
-          }}
-          onBlur={() => {
-            const parsed = parseFloat(amountText);
-            if (!isNaN(parsed)) {
-              const updated = { ...expense, amount: parsed };
-              onChange(updated);
-            }
-          }}
-        />
+          <Text style={styles.inputLabel}>Amount:</Text>
+          <TextInput
+            style={styles.modalInput}
+            keyboardType="decimal-pad"
+            value={amountText}
+            onChangeText={(text) => {
+              if (/^\d*\.?\d{0,2}$/.test(text)) {
+                setAmountText(text);
+              }
+            }}
+            onBlur={() => {
+              const parsed = parseFloat(amountText);
+              if (!isNaN(parsed)) {
+                const updated = { ...expense, amount: parsed };
+                onChange(updated);
+              }
+            }}
+          />
           <Text style={styles.inputLabel}>Paid By:</Text>
           <TextInput
             style={styles.modalInput}
