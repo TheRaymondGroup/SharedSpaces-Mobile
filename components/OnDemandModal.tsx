@@ -49,29 +49,30 @@ const OnDemandModal = ({
           <Text style={styles.modalTitle}>SEND ON DEMAND NOTIFICATIONS</Text>
 
           {/* Buttons */}
-          <TouchableOpacity
+            <TouchableOpacity
             style={styles.actionButton}
-            onPress={() =>
-              sendSpaceNotification(
-                currentSpace?.id || "",
-                "ROOMMATE NOTIFICATION",
-                "SHUT UP"
-              )
-            }
-          >
+            onPress={async () => {
+              await sendSpaceNotification(
+              currentSpace?.id || "",
+              "ROOMMATE NOTIFICATION",
+              "SHUT UP"
+              );
+              onClose();
+            }}
+            >
             <Text style={styles.actionButtonText}>
               SEND TO NOTIFY FOR SILENCE
             </Text>
-          </TouchableOpacity>
+            </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.actionButton}
-            onPress={() =>
-              sendSpaceNotification(
-                currentSpace?.id || "",
-                "ROOMMATE NOTIFICATION",
-                "There are visitors. Please be aware."
-              )
+            onPress={() => {
+            sendSpaceNotification(
+              currentSpace?.id || "",
+              "ROOMMATE NOTIFICATION",
+              "There are visitors. Please be aware."
+            ); onClose();}
             }
           >
             <Text style={styles.actionButtonText}>
@@ -89,12 +90,12 @@ const OnDemandModal = ({
 
           <TouchableOpacity
             style={styles.actionButton}
-            onPress={() =>
+            onPress={() => {
               sendSpaceNotification(
                 currentSpace?.id || "",
                 "ROOMMATE NOTIFICATION",
                 customMessage
-              )
+              ); onClose();}
             }
           >
             <Text style={styles.actionButtonText}>CUSTOM A NOTIFICATION</Text>
