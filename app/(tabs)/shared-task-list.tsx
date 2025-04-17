@@ -4,13 +4,10 @@ import { Text, View } from '@/components/Themed';
 import { styles, Task, TaskList, TaskValidator } from '../../components/Tasks/utils';
 import { TaskListCard } from '../../components/Tasks/TaskListCard';
 import { TaskDetailsModal } from '../../components/Tasks/TaskDetailsModal';
+import { useTasksState } from '../../hooks/useTasksState';
 
 export default function TabTwoScreen() {
-  const [lists, setLists] = useState<TaskList[]>([
-    { title: 'Chores List', tasks: [] },
-    { title: 'Groceries List', tasks: [] },
-    { title: 'General Errands List', tasks: [] }
-  ]);
+  const { lists, addTask, deleteTask, toggleTask, updateTask } = useTasksState();
 
   // Keep text input for each list
   const [newTasks, setNewTasks] = useState<{ [key: string]: string }>({});
@@ -58,32 +55,12 @@ export default function TabTwoScreen() {
 
   // Delete a task
   const handleDeleteTask = (listTitle: string, taskId: string) => {
-    setLists(prevLists =>
-      prevLists.map(list => {
-        if (list.title === listTitle) {
-          return { ...list, tasks: list.tasks.filter(task => task.id !== taskId) };
-        }
-        return list;
-      })
-    );
+    deleteTask(listTitle, taskId);
   };
 
   // Toggle completed
   const handleToggleTask = (listTitle: string, taskId: string) => {
-    setLists(prevLists =>
-      prevLists.map(list => {
-        if (list.title === listTitle) {
-          const updatedTasks = list.tasks.map(task => {
-            if (task.id === taskId) {
-              return { ...task, completed: !task.completed };
-            }
-            return task;
-          });
-          return { ...list, tasks: updatedTasks };
-        }
-        return list;
-      })
-    );
+    toggleTask(listTitle, taskId);
   };
 
   // Open details modal for editing an existing task
@@ -143,33 +120,10 @@ export default function TabTwoScreen() {
     }
 
     if (isNewTask) {
-      // Add the new task to the appropriate list.
-      setLists(prevLists =>
-        prevLists.map(list => {
-          if (list.title === selectedListTitle) {
-            return { ...list, tasks: [...list.tasks, selectedTask] };
-          }
-          return list;
-        })
-      );
-      // Clear the newTasks input for that list.
+      addTask(selectedListTitle, selectedTask);
       setNewTasks(prev => ({ ...prev, [selectedListTitle]: '' }));
     } else {
-      // Update an existing task.
-      setLists(prevLists =>
-        prevLists.map(list => {
-          if (list.title === selectedListTitle) {
-            const updatedTasks = list.tasks.map(task => {
-              if (task.id === selectedTask.id) {
-                return { ...selectedTask };
-              }
-              return task;
-            });
-            return { ...list, tasks: updatedTasks };
-          }
-          return list;
-        })
-      );
+      updateTask(selectedListTitle, selectedTask.id, selectedTask);
     }
 
     handleCloseDetails();
