@@ -1,10 +1,10 @@
 // EventListCard.tsx
-import React from 'react';
-import { StyleSheet, TextInput, Button, View } from 'react-native';
-import { Text } from '@/components/Themed';
-import { EventItem } from './EventItem';
-import { EventList } from './utils';
-import { Event } from './utils';
+import React from "react";
+import { StyleSheet, TextInput, Button, View } from "react-native";
+import { Text } from "@/components/Themed";
+import { EventItem } from "./EventItem";
+import { EventList } from "./utils";
+import { Event } from "./utils";
 
 interface EventListCardProps {
   list: EventList;
@@ -25,7 +25,7 @@ export function EventListCard({
   onAddEvent,
   onToggleEvent,
   onOpenDetails,
-  onDeleteEvent
+  onDeleteEvent,
 }: EventListCardProps) {
   return (
     <View style={styles.listCard}>
@@ -63,11 +63,11 @@ export function EventListCard({
 
 const styles = StyleSheet.create({
   listCard: {
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -75,26 +75,26 @@ const styles = StyleSheet.create({
   },
   listTitle: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#2c3e50',
+    fontWeight: "600",
+    color: "#2c3e50",
     marginBottom: 12,
   },
   inputRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginBottom: 4,
   },
   input: {
     flex: 1,
     height: 36,
-    borderColor: '#ccc',
+    borderColor: "#ccc",
     borderWidth: 1,
     borderRadius: 4,
     paddingHorizontal: 8,
     marginRight: 8,
-    backgroundColor: '#fff'
+    backgroundColor: "#fff",
   },
   errorText: {
-    color: 'red',
+    color: "red",
     marginBottom: 8,
     fontSize: 12,
   },

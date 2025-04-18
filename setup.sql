@@ -91,3 +91,79 @@ BEGIN
   );
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE TABLE notifications (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  recipient_id UUID NOT NULL REFERENCES auth.users(id),
+  sender_id UUID NOT NULL REFERENCES auth.users(id),
+  space_id UUID NOT NULL REFERENCES spaces(id),
+  subject TEXT NOT NULL,
+  message TEXT NOT NULL,
+  read BOOLEAN NOT NULL DEFAULT false,
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
+);
+
+
+
+
+
+
+
+
+
+-- Create events table
+CREATE TABLE public.events (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name TEXT NOT NULL,
+  completed BOOLEAN DEFAULT false,
+  location TEXT,
+  time_deadline TEXT,
+  host TEXT,
+  date_deadline TEXT,
+  space_id UUID NOT NULL REFERENCES public.spaces(id) ON DELETE CASCADE,
+  created_by UUID REFERENCES auth.users(id),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+-- Set up RLS (Row Level Security)
+ALTER TABLE public.events ENABLE ROW LEVEL SECURITY;
+
+-- Policy to allow read access for users in the same space
+CREATE POLICY "Users can view events in their spaces" ON public.events
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM space_members
+      WHERE space_members.user_id = auth.uid()
+      AND space_members.space_id = events.space_id
+    )
+  );
+
+-- Policy to allow insert for authenticated users in the space
+CREATE POLICY "Users can create events in their spaces" ON public.events
+  FOR INSERT WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM space_members
+      WHERE space_members.user_id = auth.uid()
+      AND space_members.space_id = events.space_id
+    )
+  );
+
+-- Policy to allow users to update events in their space
+CREATE POLICY "Users can update events in their spaces" ON public.events
+  FOR UPDATE USING (
+    EXISTS (
+      SELECT 1 FROM space_members
+      WHERE space_members.user_id = auth.uid()
+      AND space_members.space_id = events.space_id
+    )
+  );
+
+-- Policy to allow deletion for users in the same space
+CREATE POLICY "Users can delete events in their spaces" ON public.events
+  FOR DELETE USING (
+    EXISTS (
+      SELECT 1 FROM space_members
+      WHERE space_members.user_id = auth.uid()
+      AND space_members.space_id = events.space_id
+    )
+  );

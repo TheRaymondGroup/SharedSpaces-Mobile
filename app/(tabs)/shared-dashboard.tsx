@@ -1,4 +1,10 @@
-import { StyleSheet, SafeAreaView, TouchableOpacity, Text, View } from "react-native";
+import {
+  StyleSheet,
+  SafeAreaView,
+  TouchableOpacity,
+  Text,
+  View,
+} from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons"; // Using Ionicons for button icons
 
@@ -35,7 +41,16 @@ export default function TabOneScreen() {
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
-      <View style={[styles.header, { backgroundColor: "transparent", alignItems: "center", justifyContent: "center" }]}>
+      <View
+        style={[
+          styles.header,
+          {
+            backgroundColor: "transparent",
+            alignItems: "center",
+            justifyContent: "center",
+          },
+        ]}
+      >
         <Text style={styles.spaceName}>SHARED DASHBOARD</Text>
       </View>
 
@@ -47,7 +62,12 @@ export default function TabOneScreen() {
             style={[styles.button, { backgroundColor: btn.color }]}
             onPress={btn.onPress}
           >
-            <Ionicons name={btn.icon as keyof typeof Ionicons.glyphMap} size={24} color="#333" style={styles.icon} />
+            <Ionicons
+              name={btn.icon as keyof typeof Ionicons.glyphMap}
+              size={24}
+              color="#333"
+              style={styles.icon}
+            />
             <Text style={styles.buttonText}>{btn.label}</Text>
           </TouchableOpacity>
         ))}
