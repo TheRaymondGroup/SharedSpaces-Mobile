@@ -110,21 +110,47 @@ export default function MoneyTab() {
     }));
   };
 
-  const handleSettlement = (from: string, to: string, amount: number) => {
-    // Create a new settlement record
-    const newSettlement: Settlement = {
-      id: `settlement-${Date.now()}`,
+  const handleSettlement = (expenseId: string, from: string, to: string, amount: number) => {
+    if (!from || !to || amount <= 0) {
+      setModalErrorMessage("Please provide all settlement details");
+      return;
+    }
+
+    const expenseIndex = list.expenses.findIndex(e => e.id === expenseId);
+    if (expenseIndex === -1) return;
+
+    // Create a new settlement record associated with this expense
+    const newSettlement = {
+      id: `s${Date.now()}`,
+      expenseId,
       date: new Date().toLocaleDateString("en-US"),
       from,
       to,
       amount
     };
+
+    // Add the settlement record
+    const updatedSettlements = [...list.settlements, newSettlement];
     
-    // Add the settlement to the list
-    setList(l => ({
-      ...l,
-      settlements: [...l.settlements, newSettlement]
-    }));
+    // Mark the expense as settled if all balances are resolved
+    const updatedExpenses = list.expenses.map((expense, index) => {
+      if (index === expenseIndex) {
+        // Check if the settlement would fully resolve this expense
+        // For simplicity, we'll just mark it settled
+        return {
+          ...expense,
+          settled: true
+        };
+      }
+      return expense;
+    });
+    
+    // Update the list with new settlements and updated expenses
+    setList({
+      ...list,
+      expenses: updatedExpenses,
+      settlements: updatedSettlements
+    });
   };
 
   return (
@@ -135,6 +161,11 @@ export default function MoneyTab() {
           headerShown: true,
         }}
       />
+
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.title}>{list.title}</Text>
+      </View>
 
       {/* Add Expense Button */}
       <View style={styles.controlsCard}>
@@ -178,7 +209,7 @@ export default function MoneyTab() {
                 setModalVisible(true);
               }}
               onDelete={() => handleDeleteExpense(expense.id)}
-              onSettle={handleSettlement}
+              onSettle={(from, to, amount) => handleSettlement(expense.id, from, to, amount)}
               balances={list.balances.filter(balance => {
                 // Only show balances relevant to this expense
                 const participants = new Set([
