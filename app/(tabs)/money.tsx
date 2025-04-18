@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Stack } from "expo-router";
-import { View, StyleSheet, ScrollView, Button } from "react-native";
+import { View, StyleSheet, FlatList, Button } from "react-native";
 import { Text } from '@/components/Themed';
 import { ExpenseCard } from "../../components/Money/ExpenseCard";
 import { ExpenseDetailsModal } from "../../components/Money/ExpenseDetailsModal";
@@ -187,34 +187,37 @@ export default function MoneyTab() {
       </View>
 
       {/* Expense Cards */}
-      <ScrollView>
-        {list.expenses.length === 0 ? (
-          <View style={styles.emptyStateCard}>
-            <Text style={styles.emptyStateText}>
-              No expenses yet. Click "Add Expense" to get started.
-            </Text>
-          </View>
-        ) : (
-          list.expenses.map((expense) => (
+      {list.expenses.length === 0 ? (
+        // Empty state
+        <View style={styles.emptyStateCard}>
+          <Text style={styles.emptyStateText}>
+            No expenses yet. Click "Add Expense" to get started.
+          </Text>
+        </View>
+      ) : (
+        // FlatList with expense data only
+        <FlatList
+          data={list.expenses}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
             <ExpenseCard
-              key={expense.id}
-              expense={expense}
+              key={item.id}
+              expense={item}
               onView={() => {
                 setCurrentExpense({
-                  ...expense,
-                  date: expense.date.includes("T") 
-                    ? new Date(expense.date).toLocaleDateString("en-US")
-                    : expense.date,
+                  ...item,
+                  date: item.date.includes("T") 
+                    ? new Date(item.date).toLocaleDateString("en-US")
+                    : item.date,
                 });
                 setModalVisible(true);
               }}
-              onDelete={() => handleDeleteExpense(expense.id)}
-              onSettle={(from, to, amount) => handleSettlement(expense.id, from, to, amount)}
+              onDelete={() => handleDeleteExpense(item.id)}
+              onSettle={(from, to, amount) => handleSettlement(item.id, from, to, amount)}
               balances={list.balances.filter(balance => {
-                // Only show balances relevant to this expense
                 const participants = new Set([
-                  expense.paidBy,
-                  ...(expense.participants?.map(p => p.name) || [])
+                  item.paidBy,
+                  ...(item.participants?.map(p => p.name) || [])
                 ]);
                 return participants.has(balance.name);
               })}
@@ -224,20 +227,20 @@ export default function MoneyTab() {
                 ...list.expenses.flatMap(e => e.participants?.map(p => p.name) || [])
               ]))}
             />
-          ))
-        )}
-        
-        {/* Show message when all expenses are settled */}
-        {list.expenses.length > 0 && 
-         list.expenses.every(e => e.settled) && 
-         list.balances.every(b => Math.abs(b.balance) <= 0.01) && (
-          <View style={styles.settledCard}>
-            <Text style={styles.settledText}>
-              All expenses are settled. Everyone is square!
-            </Text>
-          </View>
-        )}
-      </ScrollView>
+          )}
+          ListFooterComponent={() => (
+            list.expenses.every(e => e.settled) && 
+            list.balances.every(b => Math.abs(b.balance) <= 0.01) ? (
+              <View style={styles.settledCard}>
+                <Text style={styles.settledText}>
+                  All expenses are settled. Everyone is square!
+                </Text>
+              </View>
+            ) : null
+          )}
+          contentContainerStyle={{ paddingBottom: 20 }}
+        />
+      )}
 
       {/* Expense Details Modal */}
       <ExpenseDetailsModal
