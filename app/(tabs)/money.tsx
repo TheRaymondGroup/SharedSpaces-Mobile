@@ -2,12 +2,12 @@
 
 import React, { useState, useEffect } from "react";
 import { Stack } from "expo-router";
-import { View, StyleSheet, FlatList, Button } from "react-native";
+import { View, StyleSheet, FlatList, Button, Alert } from "react-native";
 import { Text } from '@/components/Themed';
 import { ExpenseCard } from "../../components/Money/ExpenseCard";
 import { ExpenseDetailsModal } from "../../components/Money/ExpenseDetailsModal";
 import { SettlementModal } from "../../components/Money/SettlementModal";
-import { Expense, ExpenseList, Settlement } from "../../components/Money/utils";
+import { Expense, ExpenseList } from "../../components/Money/utils";
 
 export default function MoneyTab() {
   const [list, setList] = useState<ExpenseList>({
@@ -40,9 +40,7 @@ export default function MoneyTab() {
     
     // Process each expense
     list.expenses.forEach(expense => {
-      if (expense.settled) return; // Skip settled expenses
-      
-      // Credit the payer for the full amount
+      // Credit the payer for the full amount (even for settled expenses)
       balanceMap.set(expense.paidBy, (balanceMap.get(expense.paidBy) || 0) + expense.amount);
       
       // Debit each participant based on their share
@@ -69,6 +67,7 @@ export default function MoneyTab() {
       }
     });
     
+    // Apply all settlements
     list.settlements.forEach(settlement => {
       balanceMap.set(settlement.from, (balanceMap.get(settlement.from) || 0) + settlement.amount);
       balanceMap.set(settlement.to, (balanceMap.get(settlement.to) || 0) - settlement.amount);
@@ -116,10 +115,7 @@ export default function MoneyTab() {
       return;
     }
 
-    const expenseIndex = list.expenses.findIndex(e => e.id === expenseId);
-    if (expenseIndex === -1) return;
-
-    // Create a new settlement record associated with this expense
+    // Create a new settlement record
     const newSettlement = {
       id: `s${Date.now()}`,
       expenseId,
@@ -130,27 +126,10 @@ export default function MoneyTab() {
     };
 
     // Add the settlement record
-    const updatedSettlements = [...list.settlements, newSettlement];
-    
-    // Mark the expense as settled if all balances are resolved
-    const updatedExpenses = list.expenses.map((expense, index) => {
-      if (index === expenseIndex) {
-        // Check if the settlement would fully resolve this expense
-        // For simplicity, we'll just mark it settled
-        return {
-          ...expense,
-          settled: true
-        };
-      }
-      return expense;
-    });
-    
-    // Update the list with new settlements and updated expenses
-    setList({
-      ...list,
-      expenses: updatedExpenses,
-      settlements: updatedSettlements
-    });
+    setList(prevList => ({
+      ...prevList,
+      settlements: [...prevList.settlements, newSettlement]
+    }));
   };
 
   return (
@@ -258,6 +237,20 @@ export default function MoneyTab() {
     </View>
   );
 }
+
+// Add this to your ExpenseCard component
+const isSettled = (expense: { paidBy: any; participants: any[]; }, balances: any[]) => {
+  // An expense is settled if all balances related to it are effectively zero
+  const relevantBalances = balances.filter(balance => {
+    const participants = new Set([
+      expense.paidBy,
+      ...(expense.participants?.map(p => p.name) || [])
+    ]);
+    return participants.has(balance.name);
+  });
+  
+  return relevantBalances.every(b => Math.abs(b.balance) <= 0.01);
+};
 
 const styles = StyleSheet.create({
   container: {
