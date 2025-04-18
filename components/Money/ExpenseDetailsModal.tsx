@@ -1,6 +1,8 @@
-import React from "react";
-import { View, Text, TextInput, Modal, Pressable } from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, Text, TextInput, Modal, Pressable, ScrollView } from "react-native";
+import ModalDropdown from 'react-native-modal-dropdown';
 import { styles, Expense, formatDateInput } from "./utils";
+import { SegmentedControl } from './SegmentedControl';
 
 interface ExpenseDetailsModalProps {
   visible: boolean;
@@ -19,13 +21,14 @@ export const ExpenseDetailsModal: React.FC<ExpenseDetailsModalProps> = ({
   onChange,
   errorMessage,
 }) => {
-  const [splitInput, setSplitInput] = React.useState("");
-  const [amountText, setAmountText] = React.useState(
+  const [participantInput, setParticipantInput] = useState("");
+  const [amountText, setAmountText] = useState(
     expense ? expense.amount.toString() : "0"
   );
+  const [participantShareInputs, setParticipantShareInputs] = useState<{[index: number]: string}>({});
 
   // Update amount text when expense changes
-  React.useEffect(() => {
+  useEffect(() => {
     if (expense) {
       setAmountText(expense.amount.toString());
     }
@@ -34,41 +37,94 @@ export const ExpenseDetailsModal: React.FC<ExpenseDetailsModalProps> = ({
   // Now safe to return early
   if (!expense) return null;
 
-  const handleChange = (field: keyof Expense, value: string) => {
+  const handleChange = (field: keyof Expense, value: string | number) => {
     const updated = { ...expense } as any;
     if (field === "amount") {
-      updated.amount = parseFloat(value) || 0;
+      updated.amount = parseFloat(value as string) || 0;
+      
+      // If using equal split, update all participant shares
+      if (updated.splitMethod === 'equal' && updated.participants?.length > 0) {
+        const equalShare = updated.amount / updated.participants.length;
+        updated.participants = updated.participants.map((p: { name: any; }) => ({
+          name: p.name,
+          share: equalShare
+        }));
+      }
     } else if (field === "date") {
-      updated.date = formatDateInput(value);
+      updated.date = formatDateInput(value as string);
+    } else if (field === "splitMethod") {
+      updated.splitMethod = value as 'equal' | 'custom';
+      
+      // Instead of removing participants, update their shares to be equal
+      if (value === 'equal' && updated.participants?.length > 0) {
+        const equalShare = updated.amount / updated.participants.length;
+        updated.participants = updated.participants.map((p: { name: any; }) => ({
+          name: p.name,
+          share: equalShare
+        }));
+      }
     } else {
       updated[field] = value;
     }
     onChange(updated);
   };
 
-  const handleSplitInputChange = (text: string) => {
-    if (text.includes(",")) {
-      const parts = text.split(",");
-      const completeNames = parts
-        .slice(0, -1)
-        .map((n) => n.trim())
-        .filter((n) => n.length > 0);
-
-      if (completeNames.length > 0) {
-        const currentSplits = expense.splitBetween || [];
-        const updatedSplits = [...currentSplits, ...completeNames];
-        onChange({ ...expense, splitBetween: updatedSplits });
+  const handleAddParticipant = () => {
+    if (participantInput.trim()) {
+      const updatedExpense = {...expense};
+      
+      if (!updatedExpense.participants) {
+        updatedExpense.participants = [];
       }
-
-      setSplitInput(parts[parts.length - 1].trim());
-    } else {
-      setSplitInput(text);
+      
+      // For equal splits, just track the participant by name
+      const newParticipant = {
+        name: participantInput.trim(),
+        share: expense.splitMethod === 'equal' 
+          ? expense.amount / (updatedExpense.participants.length + 1)
+          : 0 // For custom split, user will set the share separately
+      };
+      
+      updatedExpense.participants = [...updatedExpense.participants, newParticipant];
+      onChange(updatedExpense);
+      setParticipantInput("");
     }
+  };
+
+  const handleRemoveParticipant = (index: number) => {
+    const updatedExpense = {...expense};
+    updatedExpense.participants = [...(updatedExpense.participants || [])];
+    updatedExpense.participants.splice(index, 1);
+    onChange(updatedExpense);
+  };
+
+  const handleParticipantShareChange = (index: number, shareText: string) => {
+    // Store the raw input text
+    setParticipantShareInputs(prev => ({
+      ...prev,
+      [index]: shareText
+    }));
+    
+    // Only update the actual share value if it's a valid number
+    if (shareText === '' || shareText === '.') {
+      // Don't update the actual share yet, just keep the input text
+      return;
+    }
+    
+    const share = parseFloat(shareText);
+    
+    const updatedExpense = {...expense};
+    updatedExpense.participants = [...(updatedExpense.participants || [])];
+    updatedExpense.participants[index] = {
+      ...updatedExpense.participants[index],
+      share: isNaN(share) ? 0 : share
+    };
+    onChange(updatedExpense);
   };
 
   return (
     <Modal visible={visible} animationType="slide" transparent={false}>
-      <View style={styles.modalContainer}>
+      <ScrollView style={styles.modalContainer}>
         <Text style={styles.modalHeader}>Expense Details</Text>
         <View style={styles.modalContent}>
           <Text style={styles.inputLabel}>Description:</Text>
@@ -90,8 +146,7 @@ export const ExpenseDetailsModal: React.FC<ExpenseDetailsModalProps> = ({
             onBlur={() => {
               const parsed = parseFloat(amountText);
               if (!isNaN(parsed)) {
-                const updated = { ...expense, amount: parsed };
-                onChange(updated);
+                handleChange("amount", parsed);
               }
             }}
           />
@@ -112,37 +167,99 @@ export const ExpenseDetailsModal: React.FC<ExpenseDetailsModalProps> = ({
             maxLength={10}
           />
 
+          <Text style={styles.inputLabel}>Category:</Text>
+          <TextInput
+            style={styles.modalInput}
+            value={expense.category || ""}
+            onChangeText={(t) => handleChange("category", t)}
+          />
+
+          <Text style={styles.inputLabel}>Split Method:</Text>
+          <SegmentedControl
+            options={[
+              { label: 'Equal Split', value: 'equal' },
+              { label: 'Custom Split', value: 'custom' }
+            ]}
+            selectedValue={expense.splitMethod}
+            onValueChange={(value) => handleChange('splitMethod', value)}
+          />
+
           <Text style={styles.inputLabel}>
-            Split Between (type a name and comma to add):
+            Add Participants:
           </Text>
-          {expense.splitBetween && expense.splitBetween.length > 0 && (
-            <View style={{ flexDirection: "row", flexWrap: "wrap", marginBottom: 8 }}>
-              {expense.splitBetween.map((name, index) => (
-                <View
-                  key={index}
-                  style={{
-                    backgroundColor: "#eee",
-                    paddingHorizontal: 8,
-                    paddingVertical: 4,
-                    borderRadius: 12,
-                    marginRight: 4,
-                    marginBottom: 4,
-                  }}
-                >
-                  <Text style={{ fontSize: 12 }}>{name}</Text>
+          <View style={{ flexDirection: "row" }}>
+            <TextInput
+              style={[styles.modalInput, { flex: 1 }]}
+              placeholder="Enter name"
+              value={participantInput}
+              onChangeText={setParticipantInput}
+            />
+            <Pressable 
+              style={styles.addButton} 
+              onPress={handleAddParticipant}
+            >
+              <Text style={styles.addButtonText}>Add</Text>
+            </Pressable>
+          </View>
+
+          {/* Display participants */}
+          {expense.participants && expense.participants.length > 0 && (
+            <View style={{ marginTop: 10 }}>
+              <Text style={styles.inputLabel}>Participants:</Text>
+              {expense.participants.map((participant, index) => (
+                <View key={index} style={styles.participantRow}>
+                  <Text style={{ flex: 1 }}>{participant.name}</Text>
+                  
+                  {expense.splitMethod === 'custom' && (
+                    <TextInput
+                      style={styles.shareInput}
+                      placeholder="Share"
+                      value={
+                        // Use the raw input value if it exists, otherwise use the share value
+                        participantShareInputs[index] !== undefined 
+                          ? participantShareInputs[index] 
+                          : participant.share.toString()
+                      }
+                      onChangeText={(text) => {
+                        // More permissive regex that allows decimal input
+                        if (/^(\d*\.?\d{0,2})?$/.test(text)) {
+                          handleParticipantShareChange(index, text);
+                        }
+                      }}
+                      // Add an onBlur handler to convert and finalize the value
+                      onBlur={() => {
+                        const inputValue = participantShareInputs[index] || '';
+                        let finalValue = inputValue === '' || inputValue === '.' ? 0 : parseFloat(inputValue);
+                        if (isNaN(finalValue)) finalValue = 0;
+                        
+                        // Update both the raw input and the actual share value
+                        setParticipantShareInputs(prev => ({
+                          ...prev,
+                          [index]: finalValue.toString()
+                        }));
+                        
+                        const updatedExpense = {...expense};
+                        updatedExpense.participants = [...(updatedExpense.participants || [])];
+                        updatedExpense.participants[index] = {
+                          ...updatedExpense.participants[index],
+                          share: finalValue
+                        };
+                        onChange(updatedExpense);
+                      }}
+                      keyboardType="decimal-pad"
+                    />
+                  )}
+                  
+                  <Pressable
+                    style={styles.removeButton}
+                    onPress={() => handleRemoveParticipant(index)}
+                  >
+                    <Text style={styles.removeButtonText}>✕</Text>
+                  </Pressable>
                 </View>
               ))}
             </View>
           )}
-          <TextInput
-            style={styles.modalInput}
-            placeholder="e.g., Alice, "
-            value={splitInput}
-            onChangeText={handleSplitInputChange}
-            keyboardType="default"
-            autoCapitalize="words"
-            autoCorrect={false}
-          />
 
           {errorMessage ? (
             <Text style={{ color: "red", marginTop: 8 }}>{errorMessage}</Text>
@@ -157,7 +274,7 @@ export const ExpenseDetailsModal: React.FC<ExpenseDetailsModalProps> = ({
             </Pressable>
           </View>
         </View>
-      </View>
+      </ScrollView>
     </Modal>
   );
 };

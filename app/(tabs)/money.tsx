@@ -2,38 +2,85 @@
 
 import React, { useState, useEffect } from "react";
 import { Stack } from "expo-router";
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, ScrollView, Button } from "react-native";
 import { Text } from '@/components/Themed';
-import { ExpenseListCard } from "../../components/Money/ExpenseListCard";
+import { ExpenseCard } from "../../components/Money/ExpenseCard";
 import { ExpenseDetailsModal } from "../../components/Money/ExpenseDetailsModal";
-import { Expense, ExpenseList } from "../../components/Money/utils";
+import { SettlementModal } from "../../components/Money/SettlementModal";
+import { Expense, ExpenseList, Settlement } from "../../components/Money/utils";
 
 export default function MoneyTab() {
   const [list, setList] = useState<ExpenseList>({
     title: "Reimbursements",
     expenses: [],
     balances: [],
+    settlements: [], 
+    participants: [], 
   });
   const [modalVisible, setModalVisible] = useState(false);
   const [currentExpense, setCurrentExpense] = useState<Expense | null>(null);
   const [nextId, setNextId] = useState(1);
   const [modalErrorMessage, setModalErrorMessage] = useState('');
+  const [categories, setCategories] = useState<string[]>([
+    'Groceries', 'Rent', 'Utilities', 'Entertainment', 'Other'
+  ]);
+  const [settlementModalVisible, setSettlementModalVisible] = useState(false);
 
-  // Balance calculation
   useEffect(() => {
-    const people = Array.from(new Set(list.expenses.map(e => e.paidBy)));
-    const total = list.expenses.reduce((sum, e) => sum + e.amount, 0);
-    const share = people.length ? total / people.length : 0;
-
-    const balances = people.map(name => ({
-      name,
-      balance: list.expenses
-        .filter(e => e.paidBy === name)
-        .reduce((s, e) => s + e.amount, 0) - share
-    }));
-
+    // Extract all unique participants from expenses and the participants list
+    const people = Array.from(new Set([
+      ...list.participants,
+      ...list.expenses.map(e => e.paidBy),
+      ...list.expenses.flatMap(e => e.participants?.map(p => p.name) || [])
+    ]));
+    
+    // Initialize balances for each person
+    const balanceMap = new Map<string, number>();
+    people.forEach(person => balanceMap.set(person, 0));
+    
+    // Process each expense
+    list.expenses.forEach(expense => {
+      if (expense.settled) return; // Skip settled expenses
+      
+      // Credit the payer for the full amount
+      balanceMap.set(expense.paidBy, (balanceMap.get(expense.paidBy) || 0) + expense.amount);
+      
+      // Debit each participant based on their share
+      if (expense.splitMethod === 'equal') {
+        const activeParticipants = expense.participants?.length || people.length;
+        const share = expense.amount / activeParticipants;
+        
+        // If participants explicitly defined, use those
+        if (expense.participants?.length) {
+          expense.participants.forEach(p => {
+            balanceMap.set(p.name, (balanceMap.get(p.name) || 0) - share);
+          });
+        } else {
+          // Otherwise split among all people
+          people.forEach(person => {
+            balanceMap.set(person, (balanceMap.get(person) || 0) - share);
+          });
+        }
+      } else if (expense.splitMethod === 'custom' && expense.participants) {
+        // For custom splits, use the specified shares
+        expense.participants.forEach(p => {
+          balanceMap.set(p.name, (balanceMap.get(p.name) || 0) - p.share);
+        });
+      }
+    });
+    
+    list.settlements.forEach(settlement => {
+      balanceMap.set(settlement.from, (balanceMap.get(settlement.from) || 0) + settlement.amount);
+      balanceMap.set(settlement.to, (balanceMap.get(settlement.to) || 0) - settlement.amount);
+    });
+    
+    // Convert Map to array of balance objects - REMOVE ZERO BALANCES
+    const balances = Array.from(balanceMap.entries())
+      .map(([name, balance]) => ({ name, balance }))
+      .filter(b => Math.abs(b.balance) > 0.01); // Only include non-zero balances
+    
     setList(l => ({ ...l, balances }));
-  }, [list.expenses]);
+  }, [list.expenses, list.settlements, list.participants]);
 
   const handleSaveExpense = () => {
     if (!currentExpense) return;
@@ -63,6 +110,23 @@ export default function MoneyTab() {
     }));
   };
 
+  const handleSettlement = (from: string, to: string, amount: number) => {
+    // Create a new settlement record
+    const newSettlement: Settlement = {
+      id: `settlement-${Date.now()}`,
+      date: new Date().toLocaleDateString("en-US"),
+      from,
+      to,
+      amount
+    };
+    
+    // Add the settlement to the list
+    setList(l => ({
+      ...l,
+      settlements: [...l.settlements, newSettlement]
+    }));
+  };
+
   return (
     <View style={styles.container}>
       <Stack.Screen
@@ -72,49 +136,77 @@ export default function MoneyTab() {
         }}
       />
 
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.title}>{list.title}</Text>
-      </View>
-
-      {/* Expense List */}
-      <ExpenseListCard
-        list={list}
-        onAddExpense={() => {
+      {/* Add Expense Button */}
+      <View style={styles.controlsCard}>
+        <Button title="Add Expense" onPress={() => {
           setCurrentExpense({
             id: nextId.toString(),
             description: "",
             amount: 0,
             paidBy: "",
             date: new Date().toLocaleDateString("en-US"),
+            category: "Other",
+            splitMethod: "equal",
+            participants: [],
+            settled: false,
           });
           setNextId(prev => prev + 1);
           setModalVisible(true);
-        }}
-        onSettleExpense={() => {
-          setList({ ...list, expenses: [], balances: [] });
-          setNextId(1);
-        }}
-        onViewExpense={(id) => {
-          const expense = list.expenses.find(e => e.id === id);
-          if (expense) {
-            // Reformat the ISO date if needed
-            let formattedDate = expense.date;
-            if (expense.date.includes("T")) {
-              const parsed = new Date(expense.date);
-              formattedDate = parsed.toLocaleDateString("en-US"); // MM/DD/YYYY
-            }
+        }} />
+      </View>
+
+      {/* Expense Cards */}
+      <ScrollView>
+        {list.expenses.length === 0 ? (
+          <View style={styles.emptyStateCard}>
+            <Text style={styles.emptyStateText}>
+              No expenses yet. Click "Add Expense" to get started.
+            </Text>
+          </View>
+        ) : (
+          list.expenses.map((expense) => (
+            <ExpenseCard
+              key={expense.id}
+              expense={expense}
+              onView={() => {
+                setCurrentExpense({
+                  ...expense,
+                  date: expense.date.includes("T") 
+                    ? new Date(expense.date).toLocaleDateString("en-US")
+                    : expense.date,
+                });
+                setModalVisible(true);
+              }}
+              onDelete={() => handleDeleteExpense(expense.id)}
+              onSettle={handleSettlement}
+              balances={list.balances.filter(balance => {
+                // Only show balances relevant to this expense
+                const participants = new Set([
+                  expense.paidBy,
+                  ...(expense.participants?.map(p => p.name) || [])
+                ]);
+                return participants.has(balance.name);
+              })}
+              participants={Array.from(new Set([
+                ...list.participants,
+                ...list.expenses.map(e => e.paidBy),
+                ...list.expenses.flatMap(e => e.participants?.map(p => p.name) || [])
+              ]))}
+            />
+          ))
+        )}
         
-            setCurrentExpense({
-              ...expense,
-              date: formattedDate,
-            });
-        
-            setModalVisible(true);
-          }
-        }}        
-        onDeleteExpense={handleDeleteExpense}
-      />
+        {/* Show message when all expenses are settled */}
+        {list.expenses.length > 0 && 
+         list.expenses.every(e => e.settled) && 
+         list.balances.every(b => Math.abs(b.balance) <= 0.01) && (
+          <View style={styles.settledCard}>
+            <Text style={styles.settledText}>
+              All expenses are settled. Everyone is square!
+            </Text>
+          </View>
+        )}
+      </ScrollView>
 
       {/* Expense Details Modal */}
       <ExpenseDetailsModal
@@ -147,5 +239,64 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: '600',
     color: '#333',
+  },
+  controlsCard: {
+    marginBottom: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  listCard: {
+    marginBottom: 16,
+    padding: 16,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  listTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  balancePositive: {
+    color: 'green',
+  },
+  balanceNegative: {
+    color: 'red',
+  },
+  emptyStateCard: {
+    marginTop: 20,
+    padding: 16,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+    alignItems: 'center',
+  },
+  emptyStateText: {
+    color: '#666',
+    textAlign: 'center',
+  },
+  settledCard: {
+    marginTop: 20,
+    padding: 16,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+    alignItems: 'center',
+  },
+  settledText: {
+    color: '#666',
+    textAlign: 'center',
   },
 });

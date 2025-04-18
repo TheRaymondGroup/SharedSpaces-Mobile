@@ -17,9 +17,9 @@ export const ExpenseItem: React.FC<ExpenseItemProps> = ({ expense, onPress }) =>
     <View>
       <Text style={styles.taskText}>{expense.description}</Text>
       <Text style={{ fontSize: 12, color: '#666' }}>{expense.date}</Text>
-      {expense.splitBetween && expense.splitBetween.length > 0 && (
+      {expense.participants && expense.participants.length > 0 && (
         <Text style={{ fontSize: 12, color: '#666' }}>
-          Split: {expense.splitBetween.join(", ")}
+          Split: {expense.participants.map(p => p.name).join(", ")}
         </Text>
       )}
     </View>
