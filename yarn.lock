@@ -5892,6 +5892,13 @@ react-native-date-picker@^5.0.10:
   resolved "https://registry.npmjs.org/react-native-date-picker/-/react-native-date-picker-5.0.10.tgz"
   integrity sha512-W4AXcoFXXNFhG2fItRWp5UrgiU6PJM7bW06KDl+NeWPActSzunMQkQWjMuucOsrlyfCudTyV1n3hskHRGzDeow==
 
+react-native-dotenv@^3.4.11:
+  version "3.4.11"
+  resolved "https://registry.yarnpkg.com/react-native-dotenv/-/react-native-dotenv-3.4.11.tgz#2e6c4eabd55d5f1bf109b3dd9141dadf9c55cdd4"
+  integrity sha512-6vnIE+WHABSeHCaYP6l3O1BOEhWxKH6nHAdV7n/wKn/sciZ64zPPp2NUdEUf1m7g4uuzlLbjgr+6uDt89q2DOg==
+  dependencies:
+    dotenv "^16.4.5"
+
 react-native-drawer-layout@^4.1.2:
   version "4.1.2"
   resolved "https://registry.npmjs.org/react-native-drawer-layout/-/react-native-drawer-layout-4.1.2.tgz"

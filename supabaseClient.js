@@ -1,10 +1,16 @@
 import { createClient } from '@supabase/supabase-js';
 import 'react-native-url-polyfill/auto';
+import { Platform } from 'react-native';
 
-// Replace with your Supabase URL and anon key
+// Use process.env for environment variables
+const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 
-// should put this in an .env file for security but this is a school project so I dont care.
-const supabaseUrl = 'https://tgtavubtalweruhahmsw.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRndGF2dWJ0YWx3ZXJ1aGFobXN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDEyMzY4NDEsImV4cCI6MjA1NjgxMjg0MX0.ElQIcUiIkSdkk9KDyjLoYLyqzstSbkuTLmhUIGsYrM8';
+// Check if the variables are defined
+if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error(
+        "Supabase URL or Key is undefined. "
+    );
+}
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
